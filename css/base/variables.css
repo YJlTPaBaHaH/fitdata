@@ -1,0 +1,92 @@
+/* ====================================
+   VARIABLES
+   Project: FITDATA
+   ==================================== */
+
+:root {
+  /* === Colors === */
+  --color-primary: #e53935;
+  --color-primary-hover: #d32f2f;
+  --color-primary-active: #c62828;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-dark: #424242;
+
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8f8f8;
+
+  --color-text: #000000;
+  --color-text-secondary: #424242;
+  --color-text-muted: #757575;
+
+  --color-border: #e0e0e0;
+  --color-border-light: #eeeeee;
+
+  --color-success: #2e7d32;
+  --color-warning: #f9a825;
+  --color-danger: #e53935;
+
+  /* === Typography === */
+  --font-heading: "Montserrat", Arial, sans-serif;
+  --font-body: "Lato", Arial, sans-serif;
+
+  --font-size-logo: 48px;
+  --line-height-logo: 59px;
+
+  --font-size-h1: 32px;
+  --line-height-h1: 39px;
+
+  --font-size-h2: 28px;
+  --line-height-h2: 34px;
+
+  --font-size-h3: 22px;
+  --line-height-h3: 28px;
+
+  --font-size-body-lg: 20px;
+  --line-height-body-lg: 24px;
+
+  --font-size-body: 16px;
+  --line-height-body: 24px;
+
+  --font-size-meta: 15px;
+  --line-height-meta: 18px;
+
+  --font-size-small: 14px;
+  --line-height-small: 20px;
+
+  /* === Font weights === */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semi-bold: 600;
+  --font-weight-bold: 700;
+
+  /* === Layout === */
+  --container-width: 1200px;
+  --container-padding: 20px;
+
+  --section-padding-y: 80px;
+  --section-padding-y-sm: 48px;
+
+  /* === Radius === */
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* === Transitions === */
+  --transition-fast: 0.2s ease-in-out;
+  --transition-base: 0.3s ease-in-out;
+
+  /* === Z-index === */
+  --z-header: 100;
+  --z-dropdown: 200;
+  --z-modal: 1000;
+}

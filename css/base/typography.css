@@ -1,0 +1,98 @@
+/* ====================================
+   TYPOGRAPHY
+   Project: FITDATA
+   ==================================== */
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text);
+}
+
+.logo-text {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-logo);
+  line-height: var(--line-height-logo);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+h1,
+.h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-h1);
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color-text);
+}
+
+h2,
+.h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-h2);
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color-text);
+}
+
+h3,
+.h3 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-h3);
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color-text);
+}
+
+p,
+.body-text {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text);
+}
+
+.body-text-lg {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body-lg);
+  line-height: var(--line-height-body-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text);
+}
+
+.text-meta {
+  font-family: var(--font-body);
+  font-size: var(--font-size-meta);
+  line-height: var(--line-height-meta);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.text-small {
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-accent {
+  color: var(--color-primary);
+}
+
+.nav-link,
+.button-text,
+.label-text {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
