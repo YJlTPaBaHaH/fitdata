@@ -1,0 +1,121 @@
+/* ====================================
+   BUTTONS
+   Project: FITDATA
+   ==================================== */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-medium);
+  font-size: 14px;
+  line-height: 1;
+
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+/* === PRIMARY (красная) === */
+
+.button--primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.button--primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.button--primary:active {
+  background-color: var(--color-primary-active);
+  transform: translateY(1px);
+}
+
+/* === SECONDARY (outlined) === */
+
+.button--secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.button--secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* === GHOST (текстовая) === */
+
+.button--ghost {
+  background-color: transparent;
+  color: var(--color-primary);
+  padding: 8px 12px;
+}
+
+.button--ghost:hover {
+  background-color: rgba(229, 57, 53, 0.08);
+}
+
+/* === DARK === */
+
+.button--dark {
+  background-color: var(--color-dark);
+  color: var(--color-white);
+}
+
+.button--dark:hover {
+  opacity: 0.9;
+}
+
+/* === SIZES === */
+
+.button--sm {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.button--lg {
+  padding: 16px 28px;
+  font-size: 16px;
+}
+
+/* === FULL WIDTH === */
+
+.button--block {
+  width: 100%;
+}
+
+/* === ICON BUTTON === */
+
+.button--icon {
+  padding: 10px;
+  border-radius: var(--radius-pill);
+}
+
+/* === DISABLED === */
+
+.button:disabled,
+.button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* === FOCUS === */
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
