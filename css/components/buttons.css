@@ -12,7 +12,9 @@
   font-weight: var(--font-weight-medium);
   font-size: 14px;
   line-height: 1;
+  text-decoration: none;
 
+  border: none;
   border-radius: var(--radius-md);
   padding: 12px 20px;
 

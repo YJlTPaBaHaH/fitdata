@@ -1,7 +1,7 @@
 /* ====================================
    REGISTER PAGE
    Project: FITDATA
-   Based on provided Figma measurements
+   Compact scale version
    ==================================== */
 
 .register-page {
@@ -14,14 +14,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 177px 20px 132px;
+  justify-content: center;
+  padding: 24px 20px 32px;
 }
 
 .register__card {
   width: 100%;
-  max-width: 567px;
-  min-height: 555px;
-  padding: 0 28px 22px;
+  max-width: 480px;
+  padding: 0 20px 18px;
   background: #ffffff;
   border: 0.5px solid rgba(0, 0, 0, 0.25);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
@@ -30,45 +30,42 @@
 
 .register__title {
   margin: 0;
-  min-height: 95px;
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-family: var(--font-heading);
   font-style: normal;
   font-weight: 700;
-  font-size: 40px;
-  line-height: 49px;
+  font-size: 30px;
+  line-height: 37px;
   text-align: center;
   color: #000000;
 }
 
 .register__form {
-  margin-top: 29px;
+  margin-top: 14px;
 }
 
 .register__input {
   width: 100%;
-  height: 74px;
+  height: 58px;
   display: block;
-  padding: 0 20px;
-
+  padding: 0 16px;
   background: #f6f3f7;
   border: 1px solid rgba(0, 0, 0, 0.5);
   box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.25);
   border-radius: 10px;
-
   font-family: var(--font-heading);
   font-style: normal;
   font-weight: 500;
-  font-size: 28px;
-  line-height: 34px;
+  font-size: 22px;
+  line-height: 27px;
   color: #000000;
 }
 
 .register__input + .register__input {
-  margin-top: 39px;
+  margin-top: 18px;
 }
 
 .register__input::placeholder {
@@ -76,11 +73,11 @@
 }
 
 .register__footer {
-  margin-top: 39px;
+  margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 14px;
 }
 
 .register__text {
@@ -88,52 +85,47 @@
   font-family: var(--font-heading);
   font-style: normal;
   font-weight: 500;
-  font-size: 24px;
-  line-height: 29px;
+  font-size: 18px;
+  line-height: 22px;
   color: #000000;
 }
 
 .register__login-link {
-  width: 326px;
-  height: 70px;
+  width: 240px;
+  height: 54px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
   background: #e53935;
   border-radius: 10px;
   text-decoration: none;
-
   font-family: var(--font-heading);
   font-style: normal;
   font-weight: 500;
-  font-size: 28px;
-  line-height: 34px;
+  font-size: 22px;
+  line-height: 27px;
   text-align: center;
   color: #ffffff;
 }
 
 .register__submit {
   width: 100%;
-  max-width: 450px;
-  height: 70px;
-  margin-top: 49px;
-
+  max-width: 340px;
+  height: 54px;
+  margin-top: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   background: #e53935;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-
   font-family: var(--font-heading);
   font-style: normal;
   font-weight: 700;
-  font-size: 28px;
-  line-height: 34px;
+  font-size: 22px;
+  line-height: 27px;
   text-align: center;
   color: #ffffff;
 }
@@ -145,56 +137,58 @@
 
 @media (max-width: 768px) {
   .register {
-    padding: 80px 16px 64px;
+    padding: 20px 16px 24px;
   }
 
   .register__card {
-    min-height: auto;
-    padding: 0 16px 20px;
+    max-width: 100%;
+    padding: 0 16px 16px;
   }
 
   .register__title {
-    min-height: 80px;
-    font-size: 32px;
-    line-height: 39px;
+    min-height: 64px;
+    font-size: 26px;
+    line-height: 32px;
   }
 
   .register__form {
-    margin-top: 20px;
+    margin-top: 12px;
   }
 
   .register__input {
-    height: 64px;
-    font-size: 22px;
-    line-height: 28px;
+    height: 54px;
+    padding: 0 14px;
+    font-size: 20px;
+    line-height: 24px;
   }
 
   .register__input + .register__input {
-    margin-top: 20px;
+    margin-top: 14px;
   }
 
   .register__footer {
-    margin-top: 24px;
+    margin-top: 18px;
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .register__text {
     text-align: center;
-    font-size: 20px;
-    line-height: 24px;
+    font-size: 18px;
+    line-height: 22px;
   }
 
   .register__login-link,
   .register__submit {
     width: 100%;
     max-width: none;
-    height: 64px;
-    font-size: 24px;
-    line-height: 29px;
+    height: 52px;
+    font-size: 21px;
+    line-height: 26px;
   }
 
   .register__submit {
-    margin-top: 32px;
+    margin-top: 18px;
   }
 }
