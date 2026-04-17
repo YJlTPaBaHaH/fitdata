@@ -1,23 +1,73 @@
-<header class="header">
-  <div class="container header__container">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FITDATA</title>
 
-    <!-- ЛОГО -->
-    <div class="header__logo">
-      FITDATA
-    </div>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- НАВИГАЦИЯ -->
-    <nav class="header__nav">
-      <a href="#" class="header__link header__link--active">Главная</a>
-      <a href="workouts.html" class="header__link">Тренировки</a>
-      <a href="analytics.html" class="header__link">Аналитика</a>
-    </nav>
+  <link rel="stylesheet" href="css/base/reset.css">
+  <link rel="stylesheet" href="css/base/variables.css">
+  <link rel="stylesheet" href="css/base/typography.css">
+  <link rel="stylesheet" href="css/base/global.css">
 
-    <!-- ДЕЙСТВИЯ -->
-    <div class="header__actions">
-      <a href="login.html" class="button button--ghost">Вход</a>
-      <a href="register.html" class="button button--primary">Регистрация</a>
-    </div>
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/forms.css">
 
+  <link rel="stylesheet" href="css/layout/header.css">
+  <link rel="stylesheet" href="css/pages/home.css">
+</head>
+<body>
+  <div class="page home-page">
+    <header class="header home-header">
+      <div class="home-header__logo">
+        <div class="home-header__logo-mark"></div>
+        <span class="home-header__logo-text">FITDATA</span>
+      </div>
+
+      <nav class="home-header__nav">
+        <a href="index.html" class="home-header__nav-link home-header__nav-link--active">Главная</a>
+        <a href="login.html" class="home-header__nav-link">Вход / Регистрация</a>
+      </nav>
+    </header>
+
+    <main class="page__content">
+      <section class="hero-home">
+        <div class="hero-home__left">
+          <h1 class="hero-home__title">
+            СИЛА — ЭТО<br>
+            ДАННЫЕ
+          </h1>
+
+          <p class="hero-home__subtitle">
+            анализируй, чтобы становиться сильнее
+          </p>
+
+          <a href="register.html" class="hero-home__start-button">
+            Начать
+          </a>
+        </div>
+
+        <div class="hero-home__mockup"></div>
+      </section>
+
+      <section class="home-result">
+        <div class="home-result__text">
+          <h2 class="home-result__title">
+            Отслеживай результаты<br>
+            своих тренировок
+          </h2>
+
+          <p class="home-result__description">
+            Система превращает твои усилия в понятные цифры,<br>
+            чтобы каждая тренировка приближала к цели.
+          </p>
+        </div>
+      </section>
+    </main>
   </div>
-</header>
+</body>
+</html>
