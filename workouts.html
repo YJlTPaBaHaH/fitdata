@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FITDATA — Тренировки</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base/reset.css">
+  <link rel="stylesheet" href="css/base/variables.css">
+  <link rel="stylesheet" href="css/base/typography.css">
+  <link rel="stylesheet" href="css/base/global.css">
+
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/layout/header.css">
+  <link rel="stylesheet" href="css/pages/workouts.css">
+</head>
+<body>
+  <div class="page workouts-page">
+    <header class="header">
+      <a href="index.html" class="header__logo" aria-label="FITDATA">
+        <img src="assets/logo/logo.png" alt="FITDATA" class="header__logo-image">
+      </a>
+
+      <nav class="header__nav" aria-label="Основная навигация">
+        <a href="index.html" class="header__link">Главная</a>
+        <a href="workouts.html" class="header__link header__link--active">Владислав</a>
+      </nav>
+    </header>
+
+    <main class="page__content workouts">
+      <div class="workouts__container">
+        <section class="workouts-calendar" aria-label="Календарь недели">
+          <button
+            class="workouts-calendar__arrow"
+            type="button"
+            aria-label="Предыдущая неделя"
+          >
+            &#60;
+          </button>
+
+          <div class="workouts-calendar__days"></div>
+
+          <button
+            class="workouts-calendar__arrow"
+            type="button"
+            aria-label="Следующая неделя"
+          >
+            &#62;
+          </button>
+        </section>
+
+        <div class="workouts__actions">
+          <button
+            class="workouts__add-button"
+            type="button"
+            id="openWorkoutModal"
+          >
+            Добавить упражнение
+          </button>
+        </div>
+
+        <section
+          class="workouts-grid"
+          id="workoutsGrid"
+          aria-label="Список упражнений"
+        >
+          <article class="workout-card workout-card--empty"></article>
+          <article class="workout-card workout-card--empty"></article>
+          <article class="workout-card workout-card--empty"></article>
+          <article class="workout-card workout-card--empty"></article>
+          <article class="workout-card workout-card--empty"></article>
+          <article class="workout-card workout-card--empty"></article>
+        </section>
+      </div>
+    </main>
+
+    <div class="workout-modal" id="workoutModal" aria-hidden="true">
+      <div class="workout-modal__backdrop" id="closeWorkoutModal"></div>
+
+      <div
+        class="workout-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="workoutModalTitle"
+      >
+        <h2 class="workout-modal__title" id="workoutModalTitle">
+          Добавить упражнение
+        </h2>
+
+        <form class="workout-form" id="workoutForm">
+          <div class="workout-form__field">
+            <input
+              class="workout-form__input"
+              type="text"
+              id="exerciseName"
+              name="exerciseName"
+              placeholder="Упражнение"
+              maxlength="40"
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="workout-form__field">
+            <input
+              class="workout-form__input"
+              type="number"
+              id="exerciseWeight"
+              name="exerciseWeight"
+              placeholder="Вес"
+              min="0"
+              step="0.5"
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="workout-form__field">
+            <input
+              class="workout-form__input"
+              type="number"
+              id="exerciseReps"
+              name="exerciseReps"
+              placeholder="Повторы"
+              min="1"
+              step="1"
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="workout-form__actions">
+            <button
+              class="workout-form__cancel"
+              type="button"
+              id="cancelWorkoutModal"
+            >
+              Отмена
+            </button>
+
+            <button
+              class="workout-form__submit"
+              type="submit"
+              id="workoutSubmitButton"
+            >
+              Добавить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/pages/workouts.js"></script>
+</body>
+</html>
