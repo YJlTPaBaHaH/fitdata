@@ -1,0 +1,173 @@
+/* ====================================
+   FORMS
+   Project: FITDATA
+   ==================================== */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form__label {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.form__control {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.form__control::placeholder {
+  color: var(--color-text-muted);
+}
+
+.form__control:hover {
+  border-color: var(--color-primary);
+}
+
+.form__control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
+}
+
+.form__control:disabled {
+  background-color: var(--color-bg);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+textarea.form__control {
+  min-height: 100px;
+}
+
+select.form__control {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Auth layout */
+
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background-color: var(--color-bg);
+}
+
+.auth__card {
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 24px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.auth__title {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.auth__actions {
+  margin-top: 8px;
+}
+
+.auth__footer {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.auth__link {
+  color: var(--color-primary);
+  transition: color var(--transition-fast);
+}
+
+.auth__link:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Inline form layouts */
+
+.form--inline {
+  flex-direction: row;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.form--inline .form__group {
+  flex: 1 1 220px;
+}
+
+/* Validation */
+
+.form__message {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+  color: var(--color-text-muted);
+}
+
+.form__message--error {
+  color: var(--color-danger);
+}
+
+.form__message--success {
+  color: var(--color-success);
+}
+
+.form__control--error {
+  border-color: var(--color-danger);
+}
+
+.form__control--error:focus {
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
+}
+
+/* Checkbox / radio wrappers */
+
+.form__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form__check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+/* Responsive */
+
+@media (max-width: 480px) {
+  .auth__card {
+    padding: 24px 18px;
+  }
+}
