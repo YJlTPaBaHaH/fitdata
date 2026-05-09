@@ -93,16 +93,14 @@
 
         <form class="workout-form" id="workoutForm">
           <div class="workout-form__field">
-            <input
-              class="workout-form__input"
-              type="text"
-              id="exerciseName"
-              name="exerciseName"
-              placeholder="Упражнение"
-              maxlength="40"
-              required
-              autocomplete="off"
+            <select
+            class="workout-form__input"
+            id="exerciseSelect"
+            name="exerciseSelect"
+            required
             >
+  <option value="">Выберите упражнение</option>
+</select>
           </div>
 
           <div class="workout-form__field">

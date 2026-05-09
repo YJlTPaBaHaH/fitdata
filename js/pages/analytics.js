@@ -1,5 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const STORAGE_KEY = 'fitdata_workouts';
+  const API_URL = 'http://127.0.0.1:5000/api';
+  const userId = localStorage.getItem('fitdata_user_id');
+
+  if (!userId) {
+    window.location.href = 'login.html';
+    return;
+  }
 
   const titleElement = document.getElementById('analiticsExerciseTitle');
   const historyRows = document.getElementById('analiticsHistoryRows');
@@ -33,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
       periodButtons.forEach((item) => {
         item.classList.remove('analitics-periods__item--active');
       });
+
       button.classList.add('analitics-periods__item--active');
     });
   });
@@ -56,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   if (form) {
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
       const weight = weightInput.value.trim();
@@ -64,36 +71,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!weight || !reps) return;
 
-      const allData = getStorageData();
-      const today = new Date();
+      try {
+        await fetch(`${API_URL}/analytics/record`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: Number(userId),
+            name: exerciseName,
+            weight: Number(weight),
+            reps: Number(reps),
+            date: toDateKey(new Date()),
+          }),
+        });
 
-      const newRecord = {
-        id: Date.now(),
-        name: exerciseName,
-        weight: Number(weight),
-        reps: Number(reps),
-        date: toDateKey(today),
-        dateLabel: formatRusDate(today)
-      };
-
-      allData.push(newRecord);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
-
-      closeModal();
-      renderExerciseData();
+        closeModal();
+        renderExerciseData();
+      } catch (error) {
+        alert('Ошибка добавления результата');
+        console.error(error);
+      }
     });
   }
 
   renderExerciseData();
 
-  function renderExerciseData() {
-    const allData = getStorageData();
-    const exerciseData = allData
-      .filter((item) => item.name === exerciseName)
-      .sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
+  async function renderExerciseData() {
+    try {
+      const response = await fetch(
+        `${API_URL}/analytics/exercise?user_id=${userId}&name=${encodeURIComponent(exerciseName)}`
+      );
 
-    renderHistory(exerciseData);
-    renderStats(exerciseData);
+      const exerciseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(exerciseData.error || 'Ошибка загрузки аналитики');
+      }
+
+      renderHistory(exerciseData);
+      renderStats(exerciseData);
+    } catch (error) {
+      console.error(error);
+      renderHistory([]);
+      renderStats([]);
+    }
   }
 
   function renderHistory(records) {
@@ -114,13 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const bestRecord = getBestRecord(records);
 
     historyRows.innerHTML = records.map((record) => {
-      const isBest = bestRecord && bestRecord.id === record.id;
+      const isBest = bestRecord && bestRecord.set_id === record.set_id;
 
       return `
         <div class="analitics-history-table__row analitics-history-table__row--item">
-          <span>${escapeHtml(record.dateLabel)}</span>
+          <span>${escapeHtml(formatRusDate(parseDateKey(record.date)))}</span>
           <span class="analitics-history-table__value">
-            ${isBest ? '🏆 ' : ''}${escapeHtml(record.weight)} кг · ${escapeHtml(record.reps)} раз
+            ${isBest ? '🏆 ' : ''}${escapeHtml(record.weight)} кг
           </span>
           <span>${escapeHtml(record.reps)} раз</span>
           <span class="analitics-history-table__arrow">›</span>
@@ -139,27 +161,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const lastRecord = records[0];
     const bestRecord = getBestRecord(records);
-    const lastVolume = lastRecord.weight * lastRecord.reps;
+    const totalVolume = records.reduce((sum, record) => {
+      return sum + Number(record.weight) * Number(record.reps);
+    }, 0);
 
     lastResultElement.textContent = `${lastRecord.weight} кг × ${lastRecord.reps}`;
     bestResultElement.textContent = `${bestRecord.weight} кг × ${bestRecord.reps}`;
-    volumeElement.textContent = `${lastVolume}`;
+    volumeElement.textContent = `${totalVolume} кг`;
   }
 
   function getBestRecord(records) {
     return [...records].sort((a, b) => {
-      if (b.weight !== a.weight) return b.weight - a.weight;
-      return b.reps - a.reps;
-    })[0];
-  }
+      if (Number(b.weight) !== Number(a.weight)) {
+        return Number(b.weight) - Number(a.weight);
+      }
 
-  function getStorageData() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+      return Number(b.reps) - Number(a.reps);
+    })[0];
   }
 
   function openModal() {
@@ -176,14 +194,23 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    form.reset();
+
+    if (form) {
+      form.reset();
+    }
   }
 
   function toDateKey(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+
     return `${year}-${month}-${day}`;
+  }
+
+  function parseDateKey(dateKey) {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 
   function formatRusDate(date) {

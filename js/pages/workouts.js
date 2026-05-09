@@ -1,5 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const STORAGE_KEY = 'fitdata_workouts';
+  const API_URL = 'http://127.0.0.1:5000/api';
+  const userId = localStorage.getItem('fitdata_user_id');
+
+  if (!userId) {
+    window.location.href = 'login.html';
+    return;
+  }
 
   const daysContainer = document.querySelector('.workouts-calendar__days');
   const prevBtn = document.querySelectorAll('.workouts-calendar__arrow')[0];
@@ -15,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalTitle = document.getElementById('workoutModalTitle');
   const submitButton = document.getElementById('workoutSubmitButton');
 
-  const exerciseNameInput = document.getElementById('exerciseName');
+  const exerciseSelect = document.getElementById('exerciseSelect');
   const exerciseWeightInput = document.getElementById('exerciseWeight');
   const exerciseRepsInput = document.getElementById('exerciseReps');
 
@@ -41,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedDate = new Date();
 
   renderWeek(currentStartDate);
+  loadExercises();
   renderWorkoutsForSelectedDate();
 
   daysContainer.addEventListener('click', (event) => {
@@ -59,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtn.addEventListener('click', () => {
       currentStartDate = addDays(currentStartDate, -7);
       renderWeek(currentStartDate);
+      renderWorkoutsForSelectedDate();
     });
   }
 
@@ -66,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     nextBtn.addEventListener('click', () => {
       currentStartDate = addDays(currentStartDate, 7);
       renderWeek(currentStartDate);
+      renderWorkoutsForSelectedDate();
     });
   }
 
@@ -91,48 +100,208 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = event.target.closest('.workout-card--filled');
     if (!card) return;
 
-    const workoutId = Number(card.dataset.id);
-    if (!workoutId) return;
+    const workoutExerciseId = card.dataset.workoutExerciseId;
+    const exerciseName = card.dataset.exerciseName;
 
-    const workouts = getWorkoutsForDate(selectedDate);
-    const workout = workouts.find((item) => item.id === workoutId);
+    if (!workoutExerciseId || !exerciseName) return;
 
-    if (!workout) return;
-
-    window.location.href = `analitics.html?name=${encodeURIComponent(workout.name)}`;
+    window.location.href = `analitics.html?name=${encodeURIComponent(exerciseName)}&workoutExerciseId=${workoutExerciseId}`;
   });
 
-  workoutForm.addEventListener('submit', (event) => {
+  workoutForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const name = exerciseNameInput.value.trim();
+    const exerciseId = exerciseSelect.value;
+    const exerciseName = exerciseSelect.options[exerciseSelect.selectedIndex]?.dataset.name;
     const weight = exerciseWeightInput.value.trim();
     const reps = exerciseRepsInput.value.trim();
 
-    if (!name || !weight || !reps) return;
+    if (!exerciseId || !weight || !reps) {
+      alert('Заполните все поля');
+      return;
+    }
 
-    const newWorkout = {
-      id: Date.now(),
-      name,
-      weight: Number(weight),
-      reps: Number(reps),
-      date: formatDateKey(selectedDate),
-      dateLabel: formatFullDate(selectedDate)
-    };
+    try {
+      const workout = await createWorkout();
+      const workoutExercise = await addExerciseToWorkout(workout.workout_id, exerciseId);
+      await addSet(workoutExercise.workout_exercise_id, weight, reps);
 
-    const stored = getStorageData();
-    stored.push(newWorkout);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-
-    renderWorkoutsForSelectedDate();
-    closeModal();
+      await renderWorkoutsForSelectedDate();
+      closeModal();
+    } catch (error) {
+      alert(error.message);
+      console.error(error);
+    }
   });
+
+  async function loadExercises() {
+    try {
+      const response = await fetch(`${API_URL}/exercises`);
+      const exercises = await response.json();
+
+      exerciseSelect.innerHTML = '<option value="">Выберите упражнение</option>';
+
+      exercises.forEach((exercise) => {
+        const option = document.createElement('option');
+        option.value = exercise.exercise_id;
+        option.dataset.name = exercise.name;
+        option.textContent = `${exercise.name} — ${exercise.muscle_group}`;
+        exerciseSelect.appendChild(option);
+      });
+    } catch (error) {
+      alert('Не удалось загрузить список упражнений');
+      console.error(error);
+    }
+  }
+
+  async function createWorkout() {
+    const response = await fetch(`${API_URL}/workouts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: Number(userId),
+        date: formatDateKey(selectedDate),
+        duration: null,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Ошибка создания тренировки');
+    }
+
+    return data;
+  }
+
+  async function addExerciseToWorkout(workoutId, exerciseId) {
+    const response = await fetch(`${API_URL}/workout-exercises`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        workout_id: Number(workoutId),
+        exercise_id: Number(exerciseId),
+        order_index: 1,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Ошибка добавления упражнения');
+    }
+
+    return data;
+  }
+
+  async function addSet(workoutExerciseId, weight, reps) {
+    const response = await fetch(`${API_URL}/sets`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        workout_exercise_id: Number(workoutExerciseId),
+        set_number: 1,
+        weight: Number(weight),
+        reps: Number(reps),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Ошибка добавления подхода');
+    }
+
+    return data;
+  }
+
+  async function getWorkoutsForDate(date) {
+    const dateKey = formatDateKey(date);
+
+    const response = await fetch(`${API_URL}/workouts?user_id=${userId}`);
+    const workouts = await response.json();
+
+    if (!response.ok) {
+      throw new Error(workouts.error || 'Ошибка загрузки тренировок');
+    }
+
+    const result = [];
+
+    for (const workout of workouts) {
+      if (workout.date !== dateKey) continue;
+
+      const detailResponse = await fetch(`${API_URL}/workouts/${workout.workout_id}`);
+      const detail = await detailResponse.json();
+
+      if (!detailResponse.ok) continue;
+
+      detail.exercises.forEach((exercise) => {
+        const firstSet = exercise.sets[0];
+
+        if (!firstSet) return;
+
+        result.push({
+          workoutId: detail.workout_id,
+          workoutExerciseId: exercise.workout_exercise_id,
+          name: exercise.name,
+          weight: firstSet.weight,
+          reps: firstSet.reps,
+          date: detail.date,
+          dateLabel: formatFullDate(parseDateKey(detail.date)),
+        });
+      });
+    }
+
+    return result;
+  }
+
+  async function renderWorkoutsForSelectedDate() {
+    workoutsGrid.innerHTML = '';
+
+    try {
+      const workouts = await getWorkoutsForDate(selectedDate);
+
+      if (workouts.length === 0) {
+        renderEmptyCards();
+        return;
+      }
+
+      workouts.forEach((workout) => {
+        workoutsGrid.appendChild(createWorkoutCard(workout));
+      });
+
+      const emptyCount = Math.max(0, 6 - workouts.length);
+
+      for (let i = 0; i < emptyCount; i += 1) {
+        workoutsGrid.appendChild(createEmptyCard());
+      }
+    } catch (error) {
+      console.error(error);
+      renderEmptyCards();
+    }
+  }
+
+  function renderEmptyCards() {
+    workoutsGrid.innerHTML = '';
+
+    for (let i = 0; i < 6; i += 1) {
+      workoutsGrid.appendChild(createEmptyCard());
+    }
+  }
 
   function openCreateModal() {
     modalTitle.textContent = 'Добавить упражнение';
+
     if (submitButton) {
       submitButton.textContent = 'Добавить';
     }
+
     workoutForm.reset();
     openModal();
   }
@@ -140,10 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function openModal() {
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = '';
 
     setTimeout(() => {
-      exerciseNameInput.focus();
+      exerciseSelect.focus();
     }, 0);
   }
 
@@ -190,40 +359,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function renderWorkoutsForSelectedDate() {
-    const workouts = getWorkoutsForDate(selectedDate);
-
-    workoutsGrid.innerHTML = '';
-
-    if (workouts.length === 0) {
-      for (let i = 0; i < 6; i += 1) {
-        workoutsGrid.appendChild(createEmptyCard());
-      }
-      return;
-    }
-
-    workouts.forEach((workout) => {
-      workoutsGrid.appendChild(createWorkoutCard(workout));
-    });
-
-    const emptyCount = Math.max(0, 6 - workouts.length);
-    for (let i = 0; i < emptyCount; i += 1) {
-      workoutsGrid.appendChild(createEmptyCard());
-    }
-  }
-
-  function getWorkoutsForDate(date) {
-    const dateKey = formatDateKey(date);
-
-    return getStorageData()
-      .filter((item) => item.date === dateKey)
-      .sort((a, b) => b.id - a.id);
-  }
-
   function createWorkoutCard(workout) {
     const card = document.createElement('article');
     card.className = 'workout-card workout-card--filled';
-    card.dataset.id = String(workout.id);
+    card.dataset.workoutId = String(workout.workoutId);
+    card.dataset.workoutExerciseId = String(workout.workoutExerciseId);
+    card.dataset.exerciseName = workout.name;
 
     card.innerHTML = `
       <h2 class="workout-card__title">${escapeHtml(workout.name)}</h2>
@@ -256,15 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = document.createElement('article');
     card.className = 'workout-card workout-card--empty';
     return card;
-  }
-
-  function getStorageData() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (error) {
-      return [];
-    }
   }
 
   function getStartOfWeek(date) {

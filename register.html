@@ -44,6 +44,7 @@
               name="email"
               placeholder="Почта"
               aria-label="Почта"
+              required
             >
 
             <input
@@ -52,6 +53,7 @@
               name="password"
               placeholder="Пароль"
               aria-label="Пароль"
+              required
             >
 
             <input
@@ -60,7 +62,12 @@
               name="password_repeat"
               placeholder="Повторите пароль"
               aria-label="Повторите пароль"
+              required
             >
+
+            <button type="submit" class="register__submit">
+              Зарегистрироваться
+            </button>
 
             <div class="register__footer">
               <p class="register__text">Есть аккаунт?</p>
@@ -68,12 +75,10 @@
             </div>
           </form>
         </div>
-
-        <button type="submit" class="register__submit">
-          Зарегистрироваться
-        </button>
       </section>
     </main>
   </div>
+
+  <script src="js/pages/register.js"></script>
 </body>
 </html>
