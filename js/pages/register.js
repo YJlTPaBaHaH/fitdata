@@ -1,5 +1,3 @@
-const API_URL = "http://127.0.0.1:5000/api";
-
 const registerForm = document.querySelector("form");
 
 registerForm.addEventListener("submit", async (event) => {
@@ -9,18 +7,7 @@ registerForm.addEventListener("submit", async (event) => {
   const password = document.querySelector('input[type="password"]').value;
 
   try {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
-
-    const data = await response.json();
+    const { response, data } = await registerUser(email, password);
 
     if (!response.ok) {
       alert(data.error);

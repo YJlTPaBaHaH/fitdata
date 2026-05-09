@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_URL = 'http://127.0.0.1:5000/api';
   const userId = localStorage.getItem('fitdata_user_id');
 
   if (!userId) {
@@ -84,42 +83,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         if (editingSetId) {
-          const response = await fetch(`${API_URL}/sets/${editingSetId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              weight: Number(weight),
-              reps: Number(reps),
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Ошибка редактирования результата');
-          }
+          await updateSetRequest(editingSetId, weight, reps);
         } else {
-          const response = await fetch(`${API_URL}/analytics/record`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              user_id: Number(userId),
-              name: exerciseName,
-              weight: Number(weight),
-              reps: Number(reps),
-              date: toDateKey(new Date()),
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Ошибка добавления результата');
-          }
+          await createAnalyticsRecord(
+            userId,
+            exerciseName,
+            weight,
+            reps,
+            toDateKey(new Date())
+          );
         }
 
         closeModal();
@@ -142,16 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Удалить этот результат?')) return;
 
         try {
-          const response = await fetch(`${API_URL}/sets/${setId}`, {
-            method: 'DELETE',
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Ошибка удаления результата');
-          }
-
+          await deleteSetRequest(setId);
           renderExerciseData();
         } catch (error) {
           alert(error.message);
@@ -175,16 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function renderExerciseData() {
     try {
-      const response = await fetch(
-        `${API_URL}/analytics/exercise?user_id=${userId}&name=${encodeURIComponent(exerciseName)}`
-      );
-
-      const exerciseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(exerciseData.error || 'Ошибка загрузки аналитики');
-      }
-
+      const exerciseData = await getExerciseAnalytics(userId, exerciseName);
       const filteredData = filterRecordsByPeriod(exerciseData, currentPeriod);
 
       renderHistory(filteredData);

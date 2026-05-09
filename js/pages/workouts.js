@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_URL = 'http://127.0.0.1:5000/api';
   const userId = localStorage.getItem('fitdata_user_id');
 
   if (!userId) {
@@ -27,26 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!daysContainer || !workoutsGrid || !modal || !workoutForm) return;
 
-  const weekdays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-  const monthNames = [
-    'января',
-    'февраля',
-    'марта',
-    'апреля',
-    'мая',
-    'июня',
-    'июля',
-    'августа',
-    'сентября',
-    'октября',
-    'ноября',
-    'декабря'
-  ];
-
-  let currentStartDate = getStartOfWeek(new Date());
-  let selectedDate = new Date();
-
-  renderWeek(currentStartDate);
+  renderWeek(daysContainer, getCurrentStartDate(), getSelectedDate());
   loadExercises();
   renderWorkoutsForSelectedDate();
 
@@ -57,42 +37,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateKey = dayButton.dataset.date;
     if (!dateKey) return;
 
-    selectedDate = parseDateKey(dateKey);
-    setActiveDay(dateKey);
+    setSelectedDate(parseDateKey(dateKey));
+    setActiveDay(daysContainer, dateKey);
     renderWorkoutsForSelectedDate();
   });
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      currentStartDate = addDays(currentStartDate, -7);
-      renderWeek(currentStartDate);
+      setCurrentStartDate(addDays(getCurrentStartDate(), -7));
+      renderWeek(daysContainer, getCurrentStartDate(), getSelectedDate());
       renderWorkoutsForSelectedDate();
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
-      currentStartDate = addDays(currentStartDate, 7);
-      renderWeek(currentStartDate);
+      setCurrentStartDate(addDays(getCurrentStartDate(), 7));
+      renderWeek(daysContainer, getCurrentStartDate(), getSelectedDate());
       renderWorkoutsForSelectedDate();
     });
   }
 
   if (openModalBtn) {
-    openModalBtn.addEventListener('click', openCreateModal);
+    openModalBtn.addEventListener('click', () => {
+      openCreateWorkoutModal(modalTitle, submitButton, workoutForm, modal, exerciseSelect);
+    });
   }
 
   if (closeModalBackdrop) {
-    closeModalBackdrop.addEventListener('click', closeModal);
+    closeModalBackdrop.addEventListener('click', () => {
+      closeWorkoutModal(modal, workoutForm);
+    });
   }
 
   if (cancelModalBtn) {
-    cancelModalBtn.addEventListener('click', closeModal);
+    cancelModalBtn.addEventListener('click', () => {
+      closeWorkoutModal(modal, workoutForm);
+    });
   }
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && modal.classList.contains('is-open')) {
-      closeModal();
+      closeWorkoutModal(modal, workoutForm);
     }
   });
 
@@ -112,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
 
     const exerciseId = exerciseSelect.value;
-    const exerciseName = exerciseSelect.options[exerciseSelect.selectedIndex]?.dataset.name;
     const weight = exerciseWeightInput.value.trim();
     const reps = exerciseRepsInput.value.trim();
 
@@ -127,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       await addSet(workoutExercise.workout_exercise_id, weight, reps);
 
       await renderWorkoutsForSelectedDate();
-      closeModal();
+      closeWorkoutModal(modal, workoutForm);
     } catch (error) {
       alert(error.message);
       console.error(error);
@@ -136,18 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadExercises() {
     try {
-      const response = await fetch(`${API_URL}/exercises`);
-      const exercises = await response.json();
-
-      exerciseSelect.innerHTML = '<option value="">Выберите упражнение</option>';
-
-      exercises.forEach((exercise) => {
-        const option = document.createElement('option');
-        option.value = exercise.exercise_id;
-        option.dataset.name = exercise.name;
-        option.textContent = exercise.name;
-        exerciseSelect.appendChild(option);
-      });
+      const exercises = await getExercises();
+      renderExerciseOptions(exerciseSelect, exercises);
     } catch (error) {
       alert('Не удалось загрузить список упражнений');
       console.error(error);
@@ -155,91 +130,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function createWorkout() {
-    const response = await fetch(`${API_URL}/workouts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: Number(userId),
-        date: formatDateKey(selectedDate),
-        duration: null,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Ошибка создания тренировки');
-    }
-
-    return data;
+    return createWorkoutRequest(userId, formatDateKey(getSelectedDate()));
   }
 
   async function addExerciseToWorkout(workoutId, exerciseId) {
-    const response = await fetch(`${API_URL}/workout-exercises`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        workout_id: Number(workoutId),
-        exercise_id: Number(exerciseId),
-        order_index: 1,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Ошибка добавления упражнения');
-    }
-
-    return data;
+    return addExerciseToWorkoutRequest(workoutId, exerciseId);
   }
 
   async function addSet(workoutExerciseId, weight, reps) {
-    const response = await fetch(`${API_URL}/sets`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        workout_exercise_id: Number(workoutExerciseId),
-        set_number: 1,
-        weight: Number(weight),
-        reps: Number(reps),
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Ошибка добавления подхода');
-    }
-
-    return data;
+    return addSetRequest(workoutExerciseId, weight, reps);
   }
 
   async function getWorkoutsForDate(date) {
     const dateKey = formatDateKey(date);
-
-    const response = await fetch(`${API_URL}/workouts?user_id=${userId}`);
-    const workouts = await response.json();
-
-    if (!response.ok) {
-      throw new Error(workouts.error || 'Ошибка загрузки тренировок');
-    }
+    const workouts = await getUserWorkouts(userId);
 
     const result = [];
 
     for (const workout of workouts) {
       if (workout.date !== dateKey) continue;
 
-      const detailResponse = await fetch(`${API_URL}/workouts/${workout.workout_id}`);
-      const detail = await detailResponse.json();
-
-      if (!detailResponse.ok) continue;
+      const detail = await getWorkoutDetails(workout.workout_id);
 
       detail.exercises.forEach((exercise) => {
         const firstSet = exercise.sets[0];
@@ -262,195 +173,58 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function renderWorkoutsForSelectedDate() {
-  workoutsGrid.innerHTML = '';
+    try {
+      const workouts = await getWorkoutsForDate(getSelectedDate());
+      const groupedWorkouts = groupWorkoutsByExercise(workouts);
 
-  try {
-    const workouts = await getWorkoutsForDate(selectedDate);
-    const groupedWorkouts = groupWorkoutsByExercise(workouts);
-
-    if (groupedWorkouts.length === 0) {
-      renderEmptyCards();
-      return;
+      renderWorkoutCards(workoutsGrid, groupedWorkouts);
+    } catch (error) {
+      console.error(error);
+      renderEmptyCards(workoutsGrid);
     }
-
-    groupedWorkouts.forEach((workout) => {
-      workoutsGrid.appendChild(createWorkoutCard(workout));
-    });
-
-    const emptyCount = Math.max(0, 6 - groupedWorkouts.length);
-
-    for (let i = 0; i < emptyCount; i += 1) {
-      workoutsGrid.appendChild(createEmptyCard());
-    }
-  } catch (error) {
-    console.error(error);
-    renderEmptyCards();
   }
-}
-function groupWorkoutsByExercise(workouts) {
-  const grouped = {};
 
-  workouts.forEach((workout) => {
-    if (!grouped[workout.name]) {
-      grouped[workout.name] = [];
-    }
+  function groupWorkoutsByExercise(workouts) {
+    const grouped = {};
 
-    grouped[workout.name].push(workout);
-  });
-
-  return Object.values(grouped).map((records) => {
-    const sortedByDate = [...records].sort((a, b) => {
-      return b.workoutId - a.workoutId;
-    });
-
-    const lastRecord = sortedByDate[0];
-
-    const bestRecord = [...records].sort((a, b) => {
-      if (Number(b.weight) !== Number(a.weight)) {
-        return Number(b.weight) - Number(a.weight);
+    workouts.forEach((workout) => {
+      if (!grouped[workout.name]) {
+        grouped[workout.name] = [];
       }
 
-      return Number(b.reps) - Number(a.reps);
-    })[0];
-
-    return {
-      workoutId: lastRecord.workoutId,
-      workoutExerciseId: lastRecord.workoutExerciseId,
-      name: lastRecord.name,
-
-      weight: lastRecord.weight,
-      reps: lastRecord.reps,
-      date: lastRecord.date,
-      dateLabel: lastRecord.dateLabel,
-
-      bestWeight: bestRecord.weight,
-      bestReps: bestRecord.reps,
-      bestDateLabel: bestRecord.dateLabel,
-    };
-  });
-}
-
-  function renderEmptyCards() {
-    workoutsGrid.innerHTML = '';
-
-    for (let i = 0; i < 6; i += 1) {
-      workoutsGrid.appendChild(createEmptyCard());
-    }
-  }
-
-  function openCreateModal() {
-    modalTitle.textContent = 'Добавить упражнение';
-
-    if (submitButton) {
-      submitButton.textContent = 'Добавить';
-    }
-
-    workoutForm.reset();
-    openModal();
-  }
-
-  function openModal() {
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = '';
-
-    setTimeout(() => {
-      exerciseSelect.focus();
-    }, 0);
-  }
-
-  function closeModal() {
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    workoutForm.reset();
-  }
-
-  function renderWeek(startDate) {
-    daysContainer.innerHTML = '';
-
-    for (let i = 0; i < 7; i += 1) {
-      const currentDate = addDays(startDate, i);
-      const dateKey = formatDateKey(currentDate);
-
-      const dayButton = document.createElement('button');
-      dayButton.className = 'workouts-calendar__day';
-      dayButton.type = 'button';
-      dayButton.dataset.date = dateKey;
-
-      if (dateKey === formatDateKey(selectedDate)) {
-        dayButton.classList.add('workouts-calendar__day--active');
-      }
-
-      dayButton.innerHTML = `
-        <span class="workouts-calendar__weekday">${weekdays[i]}</span>
-        <span class="workouts-calendar__date">${formatShortDate(currentDate)}</span>
-      `;
-
-      daysContainer.appendChild(dayButton);
-    }
-  }
-
-  function setActiveDay(dateKey) {
-    const dayButtons = daysContainer.querySelectorAll('.workouts-calendar__day');
-
-    dayButtons.forEach((button) => {
-      button.classList.toggle(
-        'workouts-calendar__day--active',
-        button.dataset.date === dateKey
-      );
+      grouped[workout.name].push(workout);
     });
-  }
 
-  function createWorkoutCard(workout) {
-  const card = document.createElement('article');
-  card.className = 'workout-card workout-card--filled';
-  card.dataset.workoutId = String(workout.workoutId);
-  card.dataset.workoutExerciseId = String(workout.workoutExerciseId);
-  card.dataset.exerciseName = workout.name;
+    return Object.values(grouped).map((records) => {
+      const sortedByDate = [...records].sort((a, b) => {
+        return b.workoutId - a.workoutId;
+      });
 
-  card.innerHTML = `
-    <h2 class="workout-card__title">${escapeHtml(workout.name)}</h2>
-    <div class="workout-card__divider"></div>
+      const lastRecord = sortedByDate[0];
 
-    <div class="workout-card__row">
-      <span class="workout-card__label">Последний результат:</span>
-      <span class="workout-card__value">${escapeHtml(workout.weight)}кг × ${escapeHtml(workout.reps)} раз</span>
-    </div>
+      const bestRecord = [...records].sort((a, b) => {
+        if (Number(b.weight) !== Number(a.weight)) {
+          return Number(b.weight) - Number(a.weight);
+        }
 
-    <p class="workout-card__date">${escapeHtml(workout.dateLabel)}</p>
+        return Number(b.reps) - Number(a.reps);
+      })[0];
 
-    <div class="workout-card__divider"></div>
+      return {
+        workoutId: lastRecord.workoutId,
+        workoutExerciseId: lastRecord.workoutExerciseId,
+        name: lastRecord.name,
 
-    <div class="workout-card__row">
-      <span class="workout-card__label">Лучший результат:</span>
-      <span class="workout-card__best-wrap">
-        <span class="workout-card__icon" aria-hidden="true">🏆</span>
-        <span class="workout-card__value">${escapeHtml(workout.bestWeight)}кг × ${escapeHtml(workout.bestReps)} раз</span>
-      </span>
-    </div>
+        weight: lastRecord.weight,
+        reps: lastRecord.reps,
+        date: lastRecord.date,
+        dateLabel: lastRecord.dateLabel,
 
-    <p class="workout-card__date">${escapeHtml(workout.bestDateLabel)}</p>
-  `;
-
-  return card;
-}
-
-  function createEmptyCard() {
-    const card = document.createElement('article');
-    card.className = 'workout-card workout-card--empty';
-    return card;
-  }
-
-  function getStartOfWeek(date) {
-    const result = new Date(date);
-    const day = result.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-
-    result.setDate(result.getDate() + diff);
-    result.setHours(0, 0, 0, 0);
-
-    return result;
+        bestWeight: bestRecord.weight,
+        bestReps: bestRecord.reps,
+        bestDateLabel: bestRecord.dateLabel,
+      };
+    });
   }
 
   function addDays(date, days) {
@@ -459,12 +233,23 @@ function groupWorkoutsByExercise(workouts) {
     return result;
   }
 
-  function formatShortDate(date) {
-    return `${date.getDate()} ${monthNames[date.getMonth()]}`;
-  }
-
   function formatFullDate(date) {
-    return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    const months = [
+      'января',
+      'февраля',
+      'марта',
+      'апреля',
+      'мая',
+      'июня',
+      'июля',
+      'августа',
+      'сентября',
+      'октября',
+      'ноября',
+      'декабря'
+    ];
+
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
   function formatDateKey(date) {
@@ -477,14 +262,5 @@ function groupWorkoutsByExercise(workouts) {
   function parseDateKey(dateKey) {
     const [year, month, day] = dateKey.split('-').map(Number);
     return new Date(year, month - 1, day);
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
   }
 });
