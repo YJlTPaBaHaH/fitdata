@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const exerciseName = params.get('name') || 'Упражнение';
 
   let editingSetId = null;
+  let progressChart = null;
+  let currentPeriod = 30;
 
   if (titleElement) {
     titleElement.textContent = exerciseName;
@@ -46,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       button.classList.add('analitics-periods__item--active');
+      currentPeriod = getPeriodValue(button.textContent.trim());
+      renderExerciseData();
     });
   });
 
@@ -181,13 +185,181 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(exerciseData.error || 'Ошибка загрузки аналитики');
       }
 
-      renderHistory(exerciseData);
-      renderStats(exerciseData);
+      const filteredData = filterRecordsByPeriod(exerciseData, currentPeriod);
+
+      renderHistory(filteredData);
+      renderStats(filteredData);
+      renderChart(filteredData);
     } catch (error) {
       console.error(error);
       renderHistory([]);
       renderStats([]);
+      renderChart([]);
     }
+  }
+
+  function filterRecordsByPeriod(records, period) {
+    if (period === 'all') {
+      return records;
+    }
+
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - period);
+    startDate.setHours(0, 0, 0, 0);
+
+    return records.filter((record) => {
+      const recordDate = parseDateKey(record.date);
+      recordDate.setHours(12, 0, 0, 0);
+
+      return recordDate >= startDate && recordDate <= now;
+    });
+  }
+
+  function getPeriodValue(periodText) {
+    if (periodText === '7 дней') return 7;
+    if (periodText === '30 дней') return 30;
+    if (periodText === '3 месяца') return 90;
+    return 'all';
+  }
+
+  function renderChart(records) {
+    const canvas = document.getElementById('progressChart');
+
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const sortedRecords = [...records].sort((a, b) => {
+      return new Date(a.date) - new Date(b.date);
+    });
+
+    const labels = sortedRecords.map((record) => {
+      return formatRusDate(parseDateKey(record.date));
+    });
+
+    const weights = sortedRecords.map((record) => {
+      return Number(record.weight);
+    });
+
+    if (progressChart) {
+      progressChart.destroy();
+    }
+
+    progressChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Рабочий вес, кг',
+            data: weights,
+            borderColor: '#E53935',
+            backgroundColor: 'rgba(229, 57, 53, 0.12)',
+            pointBackgroundColor: '#FFFFFF',
+            pointBorderColor: '#E53935',
+            pointHoverBackgroundColor: '#E53935',
+            pointHoverBorderColor: '#FFFFFF',
+            borderWidth: 4,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBorderWidth: 3,
+            tension: 0.35,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              color: '#424242',
+              font: {
+                family: 'Montserrat',
+                size: 14,
+                weight: '600',
+              },
+              usePointStyle: true,
+              pointStyle: 'circle',
+            },
+          },
+          tooltip: {
+            backgroundColor: '#424242',
+            titleColor: '#FFFFFF',
+            bodyColor: '#FFFFFF',
+            borderColor: '#E53935',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false,
+            callbacks: {
+              label: (context) => {
+                return `Вес: ${context.raw} кг`;
+              },
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            ticks: {
+              color: '#424242',
+              font: {
+                family: 'Lato',
+                size: 13,
+              },
+            },
+            title: {
+              display: true,
+              text: 'Вес, кг',
+              color: '#424242',
+              font: {
+                family: 'Montserrat',
+                size: 14,
+                weight: '600',
+              },
+            },
+            grid: {
+              color: 'rgba(66, 66, 66, 0.10)',
+            },
+            border: {
+              color: 'rgba(66, 66, 66, 0.25)',
+            },
+          },
+          x: {
+            ticks: {
+              color: '#424242',
+              font: {
+                family: 'Lato',
+                size: 13,
+              },
+            },
+            title: {
+              display: true,
+              text: 'Дата',
+              color: '#424242',
+              font: {
+                family: 'Montserrat',
+                size: 14,
+                weight: '600',
+              },
+            },
+            grid: {
+              color: 'rgba(66, 66, 66, 0.08)',
+            },
+            border: {
+              color: 'rgba(66, 66, 66, 0.25)',
+            },
+          },
+        },
+      },
+    });
   }
 
   function renderHistory(records) {

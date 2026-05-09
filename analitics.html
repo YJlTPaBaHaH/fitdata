@@ -45,12 +45,9 @@
               <div class="analitics-chart-card__header">
                 <h1 class="analitics-chart-card__title" id="analiticsExerciseTitle">Упражнение</h1>
               </div>
-
-              <div class="analitics-chart-card__body">
-                <div class="analitics-chart-placeholder">
-                  <span class="analitics-chart-placeholder__text">График будет добавлен позже</span>
+              <div class="analitics-chart-placeholder">
+                <canvas id="progressChart"></canvas>
                 </div>
-              </div>
             </section>
 
             <section class="analitics-history-card">
@@ -155,6 +152,7 @@
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/utils/auth-header.js"></script>
   <script src="js/pages/analytics.js"></script>
 </body>
