@@ -16,12 +16,23 @@ document.addEventListener('DOMContentLoaded', () => {
     <a href="index.html" class="header__link">Главная</a>
 
     <div class="header-user">
-      <button class="header-user__button" type="button" id="userMenuButton">
+      <button
+        class="header-user__button"
+        type="button"
+        id="userMenuButton"
+      >
         ${escapeHtml(userEmail)}
       </button>
 
-      <div class="header-user__dropdown" id="userMenuDropdown">
-        <button class="header-user__logout" type="button" id="logoutButton">
+      <div
+        class="header-user__dropdown"
+        id="userMenuDropdown"
+      >
+        <button
+          class="header-user__logout"
+          type="button"
+          id="logoutButton"
+        >
           Выйти
         </button>
       </div>
@@ -32,28 +43,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const userMenuDropdown = document.getElementById('userMenuDropdown');
   const logoutButton = document.getElementById('logoutButton');
 
-  userMenuButton.addEventListener('click', () => {
-    userMenuDropdown.classList.toggle('header-user__dropdown--open');
-  });
+  if (userMenuButton && userMenuDropdown) {
+    userMenuButton.addEventListener('click', () => {
+      userMenuDropdown.classList.toggle('header-user__dropdown--open');
+    });
+  }
 
-  logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('fitdata_user_id');
-    localStorage.removeItem('fitdata_email');
-    window.location.href = 'login.html';
-  });
+  if (logoutButton) {
+    logoutButton.addEventListener('click', () => {
+      localStorage.removeItem('fitdata_user_id');
+      localStorage.removeItem('fitdata_email');
+      window.location.href = 'login.html';
+    });
+  }
 
   document.addEventListener('click', (event) => {
-    if (!event.target.closest('.header-user')) {
+    if (
+      userMenuDropdown &&
+      !event.target.closest('.header-user')
+    ) {
       userMenuDropdown.classList.remove('header-user__dropdown--open');
     }
   });
-
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
 });
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
