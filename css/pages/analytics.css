@@ -519,3 +519,32 @@
     height: 60px;
   }
 }
+
+.analitics-history-table__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.analitics-history-table__edit,
+.analitics-history-table__delete {
+  border: none;
+  background: transparent;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.analitics-history-table__edit {
+  color: #424242;
+}
+
+.analitics-history-table__delete {
+  color: #e53935;
+}
+
+.analitics-history-table__edit:hover,
+.analitics-history-table__delete:hover {
+  text-decoration: underline;
+}

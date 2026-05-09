@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const option = document.createElement('option');
         option.value = exercise.exercise_id;
         option.dataset.name = exercise.name;
-        option.textContent = `${exercise.name} — ${exercise.muscle_group}`;
+        option.textContent = exercise.name;
         exerciseSelect.appendChild(option);
       });
     } catch (error) {

@@ -356,6 +356,68 @@ def add_analytics_record():
         "weight": weight,
         "reps": reps
     }), 201
+@app.route("/api/sets/<int:set_id>", methods=["DELETE"])
+def delete_set(set_id):
+    with get_connection() as connection:
+        existing_set = connection.execute(
+            """
+            SELECT set_id
+            FROM sets
+            WHERE set_id = ?
+            """,
+            (set_id,)
+        ).fetchone()
 
+        if existing_set is None:
+            return jsonify({"error": "Подход не найден"}), 404
+
+        connection.execute(
+            """
+            DELETE FROM sets
+            WHERE set_id = ?
+            """,
+            (set_id,)
+        )
+
+    return jsonify({"message": "Подход удален"})
+
+
+@app.route("/api/sets/<int:set_id>", methods=["PUT"])
+def update_set(set_id):
+    data = request.get_json()
+
+    weight = data.get("weight")
+    reps = data.get("reps")
+
+    if weight is None or reps is None:
+        return jsonify({"error": "Необходимо указать вес и количество повторений"}), 400
+
+    with get_connection() as connection:
+        existing_set = connection.execute(
+            """
+            SELECT set_id
+            FROM sets
+            WHERE set_id = ?
+            """,
+            (set_id,)
+        ).fetchone()
+
+        if existing_set is None:
+            return jsonify({"error": "Подход не найден"}), 404
+
+        connection.execute(
+            """
+            UPDATE sets
+            SET weight = ?, reps = ?
+            WHERE set_id = ?
+            """,
+            (weight, reps, set_id)
+        )
+
+    return jsonify({
+        "set_id": set_id,
+        "weight": weight,
+        "reps": reps
+    })
 if __name__ == "__main__":
     app.run(debug=True)

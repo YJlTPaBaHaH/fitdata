@@ -248,6 +248,8 @@
   z-index: 1;
   width: 100%;
   max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
   min-height: 626px;
   padding: 0 31px 24px;
   background: #ffffff;
@@ -473,4 +475,12 @@
     font-size: 22px;
     line-height: 28px;
   }
+}
+
+.workout-form__input {
+  appearance: auto;
+}
+
+select.workout-form__input {
+  cursor: pointer;
 }

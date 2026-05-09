@@ -22,11 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const cancelModalButton = document.getElementById('cancelAnaliticsModal');
   const form = document.getElementById('analiticsForm');
 
+  const modalTitle = document.getElementById('analiticsModalTitle');
+  const submitButton = form?.querySelector('.analitics-form__submit');
+
   const weightInput = document.getElementById('analiticsWeight');
   const repsInput = document.getElementById('analiticsReps');
 
   const params = new URLSearchParams(window.location.search);
   const exerciseName = params.get('name') || 'Упражнение';
+
+  let editingSetId = null;
 
   if (titleElement) {
     titleElement.textContent = exerciseName;
@@ -45,7 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   if (openModalButton) {
-    openModalButton.addEventListener('click', openModal);
+    openModalButton.addEventListener('click', () => {
+      openCreateModal();
+    });
   }
 
   if (closeModalButton) {
@@ -72,25 +79,90 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!weight || !reps) return;
 
       try {
-        await fetch(`${API_URL}/analytics/record`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: Number(userId),
-            name: exerciseName,
-            weight: Number(weight),
-            reps: Number(reps),
-            date: toDateKey(new Date()),
-          }),
-        });
+        if (editingSetId) {
+          const response = await fetch(`${API_URL}/sets/${editingSetId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              weight: Number(weight),
+              reps: Number(reps),
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Ошибка редактирования результата');
+          }
+        } else {
+          const response = await fetch(`${API_URL}/analytics/record`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_id: Number(userId),
+              name: exerciseName,
+              weight: Number(weight),
+              reps: Number(reps),
+              date: toDateKey(new Date()),
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Ошибка добавления результата');
+          }
+        }
 
         closeModal();
         renderExerciseData();
       } catch (error) {
-        alert('Ошибка добавления результата');
+        alert(error.message);
         console.error(error);
+      }
+    });
+  }
+
+  if (historyRows) {
+    historyRows.addEventListener('click', async (event) => {
+      const deleteButton = event.target.closest('.analitics-history-table__delete');
+      const editButton = event.target.closest('.analitics-history-table__edit');
+
+      if (deleteButton) {
+        const setId = deleteButton.dataset.setId;
+
+        if (!confirm('Удалить этот результат?')) return;
+
+        try {
+          const response = await fetch(`${API_URL}/sets/${setId}`, {
+            method: 'DELETE',
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Ошибка удаления результата');
+          }
+
+          renderExerciseData();
+        } catch (error) {
+          alert(error.message);
+          console.error(error);
+        }
+
+        return;
+      }
+
+      if (editButton) {
+        const setId = editButton.dataset.setId;
+        const weight = editButton.dataset.weight;
+        const reps = editButton.dataset.reps;
+
+        openEditModal(setId, weight, reps);
       }
     });
   }
@@ -127,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span>—</span>
           <span>—</span>
           <span>—</span>
-          <span class="analitics-history-table__arrow">›</span>
+          <span>—</span>
         </div>
       `;
       return;
@@ -141,11 +213,32 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="analitics-history-table__row analitics-history-table__row--item">
           <span>${escapeHtml(formatRusDate(parseDateKey(record.date)))}</span>
+
           <span class="analitics-history-table__value">
             ${isBest ? '🏆 ' : ''}${escapeHtml(record.weight)} кг
           </span>
+
           <span>${escapeHtml(record.reps)} раз</span>
-          <span class="analitics-history-table__arrow">›</span>
+
+          <span class="analitics-history-table__actions">
+            <button
+              class="analitics-history-table__edit"
+              type="button"
+              data-set-id="${record.set_id}"
+              data-weight="${record.weight}"
+              data-reps="${record.reps}"
+            >
+              Ред.
+            </button>
+
+            <button
+              class="analitics-history-table__delete"
+              type="button"
+              data-set-id="${record.set_id}"
+            >
+              Удалить
+            </button>
+          </span>
         </div>
       `;
     }).join('');
@@ -180,6 +273,41 @@ document.addEventListener('DOMContentLoaded', () => {
     })[0];
   }
 
+  function openCreateModal() {
+    editingSetId = null;
+
+    if (modalTitle) {
+      modalTitle.textContent = 'Добавить результат';
+    }
+
+    if (submitButton) {
+      submitButton.textContent = 'Добавить';
+    }
+
+    if (form) {
+      form.reset();
+    }
+
+    openModal();
+  }
+
+  function openEditModal(setId, weight, reps) {
+    editingSetId = setId;
+
+    if (modalTitle) {
+      modalTitle.textContent = 'Редактировать результат';
+    }
+
+    if (submitButton) {
+      submitButton.textContent = 'Сохранить';
+    }
+
+    weightInput.value = weight;
+    repsInput.value = reps;
+
+    openModal();
+  }
+
   function openModal() {
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
@@ -195,8 +323,18 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
 
+    editingSetId = null;
+
     if (form) {
       form.reset();
+    }
+
+    if (modalTitle) {
+      modalTitle.textContent = 'Добавить результат';
+    }
+
+    if (submitButton) {
+      submitButton.textContent = 'Добавить';
     }
   }
 
