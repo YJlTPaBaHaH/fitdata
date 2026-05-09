@@ -262,30 +262,73 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function renderWorkoutsForSelectedDate() {
-    workoutsGrid.innerHTML = '';
+  workoutsGrid.innerHTML = '';
 
-    try {
-      const workouts = await getWorkoutsForDate(selectedDate);
+  try {
+    const workouts = await getWorkoutsForDate(selectedDate);
+    const groupedWorkouts = groupWorkoutsByExercise(workouts);
 
-      if (workouts.length === 0) {
-        renderEmptyCards();
-        return;
-      }
-
-      workouts.forEach((workout) => {
-        workoutsGrid.appendChild(createWorkoutCard(workout));
-      });
-
-      const emptyCount = Math.max(0, 6 - workouts.length);
-
-      for (let i = 0; i < emptyCount; i += 1) {
-        workoutsGrid.appendChild(createEmptyCard());
-      }
-    } catch (error) {
-      console.error(error);
+    if (groupedWorkouts.length === 0) {
       renderEmptyCards();
+      return;
     }
+
+    groupedWorkouts.forEach((workout) => {
+      workoutsGrid.appendChild(createWorkoutCard(workout));
+    });
+
+    const emptyCount = Math.max(0, 6 - groupedWorkouts.length);
+
+    for (let i = 0; i < emptyCount; i += 1) {
+      workoutsGrid.appendChild(createEmptyCard());
+    }
+  } catch (error) {
+    console.error(error);
+    renderEmptyCards();
   }
+}
+function groupWorkoutsByExercise(workouts) {
+  const grouped = {};
+
+  workouts.forEach((workout) => {
+    if (!grouped[workout.name]) {
+      grouped[workout.name] = [];
+    }
+
+    grouped[workout.name].push(workout);
+  });
+
+  return Object.values(grouped).map((records) => {
+    const sortedByDate = [...records].sort((a, b) => {
+      return b.workoutId - a.workoutId;
+    });
+
+    const lastRecord = sortedByDate[0];
+
+    const bestRecord = [...records].sort((a, b) => {
+      if (Number(b.weight) !== Number(a.weight)) {
+        return Number(b.weight) - Number(a.weight);
+      }
+
+      return Number(b.reps) - Number(a.reps);
+    })[0];
+
+    return {
+      workoutId: lastRecord.workoutId,
+      workoutExerciseId: lastRecord.workoutExerciseId,
+      name: lastRecord.name,
+
+      weight: lastRecord.weight,
+      reps: lastRecord.reps,
+      date: lastRecord.date,
+      dateLabel: lastRecord.dateLabel,
+
+      bestWeight: bestRecord.weight,
+      bestReps: bestRecord.reps,
+      bestDateLabel: bestRecord.dateLabel,
+    };
+  });
+}
 
   function renderEmptyCards() {
     workoutsGrid.innerHTML = '';
@@ -360,38 +403,38 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createWorkoutCard(workout) {
-    const card = document.createElement('article');
-    card.className = 'workout-card workout-card--filled';
-    card.dataset.workoutId = String(workout.workoutId);
-    card.dataset.workoutExerciseId = String(workout.workoutExerciseId);
-    card.dataset.exerciseName = workout.name;
+  const card = document.createElement('article');
+  card.className = 'workout-card workout-card--filled';
+  card.dataset.workoutId = String(workout.workoutId);
+  card.dataset.workoutExerciseId = String(workout.workoutExerciseId);
+  card.dataset.exerciseName = workout.name;
 
-    card.innerHTML = `
-      <h2 class="workout-card__title">${escapeHtml(workout.name)}</h2>
-      <div class="workout-card__divider"></div>
+  card.innerHTML = `
+    <h2 class="workout-card__title">${escapeHtml(workout.name)}</h2>
+    <div class="workout-card__divider"></div>
 
-      <div class="workout-card__row">
-        <span class="workout-card__label">Последний результат:</span>
-        <span class="workout-card__value">${escapeHtml(workout.weight)}кг × ${escapeHtml(workout.reps)} раз</span>
-      </div>
+    <div class="workout-card__row">
+      <span class="workout-card__label">Последний результат:</span>
+      <span class="workout-card__value">${escapeHtml(workout.weight)}кг × ${escapeHtml(workout.reps)} раз</span>
+    </div>
 
-      <p class="workout-card__date">${escapeHtml(workout.dateLabel)}</p>
+    <p class="workout-card__date">${escapeHtml(workout.dateLabel)}</p>
 
-      <div class="workout-card__divider"></div>
+    <div class="workout-card__divider"></div>
 
-      <div class="workout-card__row">
-        <span class="workout-card__label">Лучший результат:</span>
-        <span class="workout-card__best-wrap">
-          <span class="workout-card__icon" aria-hidden="true">🏆</span>
-          <span class="workout-card__value">${escapeHtml(workout.weight)}кг × ${escapeHtml(workout.reps)} раз</span>
-        </span>
-      </div>
+    <div class="workout-card__row">
+      <span class="workout-card__label">Лучший результат:</span>
+      <span class="workout-card__best-wrap">
+        <span class="workout-card__icon" aria-hidden="true">🏆</span>
+        <span class="workout-card__value">${escapeHtml(workout.bestWeight)}кг × ${escapeHtml(workout.bestReps)} раз</span>
+      </span>
+    </div>
 
-      <p class="workout-card__date">${escapeHtml(workout.dateLabel)}</p>
-    `;
+    <p class="workout-card__date">${escapeHtml(workout.bestDateLabel)}</p>
+  `;
 
-    return card;
-  }
+  return card;
+}
 
   function createEmptyCard() {
     const card = document.createElement('article');
