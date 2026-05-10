@@ -60,7 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (openModalBtn) {
     openModalBtn.addEventListener('click', () => {
-      openCreateWorkoutModal(modalTitle, submitButton, workoutForm, modal, exerciseSelect);
+      openCreateWorkoutModal(
+        modalTitle,
+        submitButton,
+        workoutForm,
+        modal,
+        exerciseSelect
+      );
     });
   }
 
@@ -109,9 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const workout = await createWorkout();
       const workoutExercise = await addExerciseToWorkout(workout.workout_id, exerciseId);
-      await addSet(workoutExercise.workout_exercise_id, weight, reps);
 
+      await addSet(workoutExercise.workout_exercise_id, weight, reps);
       await renderWorkoutsForSelectedDate();
+
       closeWorkoutModal(modal, workoutForm);
     } catch (error) {
       alert(error.message);
@@ -130,7 +137,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function createWorkout() {
-    return createWorkoutRequest(userId, formatDateKey(getSelectedDate()));
+    const selectedDateKey = formatDateKey(getSelectedDate());
+    const workouts = await getUserWorkouts(userId);
+
+    const existingWorkout = workouts.find((workout) => {
+      return workout.date === selectedDateKey;
+    });
+
+    if (existingWorkout) {
+      return existingWorkout;
+    }
+
+    return createWorkoutRequest(userId, selectedDateKey);
   }
 
   async function addExerciseToWorkout(workoutId, exerciseId) {
@@ -246,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'сентября',
       'октября',
       'ноября',
-      'декабря'
+      'декабря',
     ];
 
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
@@ -256,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+
     return `${year}-${month}-${day}`;
   }
 

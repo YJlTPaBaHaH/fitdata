@@ -35,7 +35,7 @@ def get_exercise_analytics():
               AND e.name = ?
             ORDER BY w.date DESC, s.set_id DESC
             """,
-            (user_id, exercise_name)
+            (user_id, exercise_name),
         ).fetchall()
 
     return jsonify([dict(record) for record in records])
@@ -61,38 +61,90 @@ def add_analytics_record():
             FROM exercises
             WHERE name = ?
             """,
-            (exercise_name,)
+            (exercise_name,),
         ).fetchone()
 
         if exercise is None:
             return jsonify({"error": "Упражнение не найдено"}), 404
 
-        workout_cursor = connection.execute(
+        workout = connection.execute(
             """
-            INSERT INTO workouts (user_id, date, duration)
-            VALUES (?, ?, ?)
+            SELECT workout_id
+            FROM workouts
+            WHERE user_id = ?
+              AND date = ?
+            ORDER BY workout_id DESC
+            LIMIT 1
             """,
-            (user_id, date, None)
-        )
+            (user_id, date),
+        ).fetchone()
 
-        workout_id = workout_cursor.lastrowid
+        if workout is None:
+            workout_cursor = connection.execute(
+                """
+                INSERT INTO workouts (user_id, date, duration)
+                VALUES (?, ?, ?)
+                """,
+                (user_id, date, None),
+            )
 
-        workout_exercise_cursor = connection.execute(
+            workout_id = workout_cursor.lastrowid
+        else:
+            workout_id = workout["workout_id"]
+
+        workout_exercise = connection.execute(
             """
-            INSERT INTO workout_exercises (workout_id, exercise_id, order_index)
-            VALUES (?, ?, ?)
+            SELECT workout_exercise_id
+            FROM workout_exercises
+            WHERE workout_id = ?
+              AND exercise_id = ?
+            ORDER BY workout_exercise_id DESC
+            LIMIT 1
             """,
-            (workout_id, exercise["exercise_id"], 1)
-        )
+            (workout_id, exercise["exercise_id"]),
+        ).fetchone()
 
-        workout_exercise_id = workout_exercise_cursor.lastrowid
+        if workout_exercise is None:
+            order_index_row = connection.execute(
+                """
+                SELECT COALESCE(MAX(order_index), 0) + 1 AS next_order_index
+                FROM workout_exercises
+                WHERE workout_id = ?
+                """,
+                (workout_id,),
+            ).fetchone()
+
+            order_index = order_index_row["next_order_index"]
+
+            workout_exercise_cursor = connection.execute(
+                """
+                INSERT INTO workout_exercises (workout_id, exercise_id, order_index)
+                VALUES (?, ?, ?)
+                """,
+                (workout_id, exercise["exercise_id"], order_index),
+            )
+
+            workout_exercise_id = workout_exercise_cursor.lastrowid
+        else:
+            workout_exercise_id = workout_exercise["workout_exercise_id"]
+
+        set_number_row = connection.execute(
+            """
+            SELECT COALESCE(MAX(set_number), 0) + 1 AS next_set_number
+            FROM sets
+            WHERE workout_exercise_id = ?
+            """,
+            (workout_exercise_id,),
+        ).fetchone()
+
+        set_number = set_number_row["next_set_number"]
 
         set_cursor = connection.execute(
             """
             INSERT INTO sets (workout_exercise_id, set_number, weight, reps)
             VALUES (?, ?, ?, ?)
             """,
-            (workout_exercise_id, 1, weight, reps)
+            (workout_exercise_id, set_number, weight, reps),
         )
 
         set_id = set_cursor.lastrowid
@@ -104,6 +156,7 @@ def add_analytics_record():
         "exercise_id": exercise["exercise_id"],
         "name": exercise_name,
         "date": date,
+        "set_number": set_number,
         "weight": weight,
-        "reps": reps
+        "reps": reps,
     }), 201
