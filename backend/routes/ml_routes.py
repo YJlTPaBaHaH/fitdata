@@ -1,5 +1,6 @@
 from pathlib import Path
 from functools import lru_cache
+from datetime import date as current_date
 
 import pandas as pd
 from flask import Blueprint, jsonify, request
@@ -11,8 +12,18 @@ from ml.model import (
     predict_load_class,
     predict_load_probabilities,
     predict_next_volume,
+    postprocess_next_volume_prediction,
 )
-from ml.recommender import generate_recommendation, get_load_status
+from ml.recommender import (
+    generate_recommendation,
+    generate_temporal_recommendation,
+    get_load_status,
+)
+from ml.temporal import (
+    build_temporal_state,
+    calculate_temporal_training_frequency_7d,
+    build_display_metrics,
+)
 
 
 ml_routes = Blueprint("ml_routes", __name__)
@@ -175,16 +186,23 @@ def build_user_workout_history(user_id: int) -> dict:
 def build_prediction_result(features_row: pd.DataFrame) -> dict:
     load_classifier, volume_regressor = get_models()
 
+    latest_row = features_row.iloc[0]
+
     load_class = predict_load_class(load_classifier, features_row)
     load_status = get_load_status(load_class)
 
     load_probabilities = predict_load_probabilities(load_classifier, features_row)
     confidence = interpret_model_confidence(load_probabilities)
 
-    predicted_next_volume = predict_next_volume(volume_regressor, features_row)
-    predicted_next_volume = max(0.0, float(predicted_next_volume))
+    raw_predicted_next_volume = predict_next_volume(volume_regressor, features_row)
 
-    latest_row = features_row.iloc[0]
+    prediction = postprocess_next_volume_prediction(
+        raw_predicted_volume=raw_predicted_next_volume,
+        current_volume=float(latest_row["total_volume"]),
+        max_change_ratio=0.35,
+    )
+
+    predicted_next_volume = prediction["predicted_next_volume"]
 
     recommendation = generate_recommendation(
         load_class=load_class,
@@ -218,18 +236,20 @@ def build_prediction_result(features_row: pd.DataFrame) -> dict:
             "volume_trend": round(float(latest_row["volume_trend"]), 4),
             "training_frequency_7d": int(latest_row["training_frequency_7d"]),
         },
-        "prediction": {
-            "predicted_next_volume": round(float(predicted_next_volume), 2),
-        },
+        "prediction": prediction,
     }
 
 
 @ml_routes.route("/api/ml/recommendation", methods=["GET"])
 def get_ml_recommendation():
     user_id = request.args.get("user_id", type=int)
+    selected_date = request.args.get("date")
 
     if not user_id:
         return jsonify({"error": "Необходимо указать user_id"}), 400
+
+    if not selected_date:
+        selected_date = current_date.today().isoformat()
 
     try:
         workout_history = build_user_workout_history(user_id)
@@ -237,13 +257,91 @@ def get_ml_recommendation():
         if not workout_history["workouts"]:
             return jsonify({"error": "У пользователя пока нет тренировок"}), 404
 
-        features_df = build_features_from_history(workout_history)
+        workouts_until_selected_date = [
+            workout
+            for workout in workout_history["workouts"]
+            if workout["date"] <= selected_date
+        ]
+
+        if not workouts_until_selected_date:
+            temporal_status = {
+                "status": "no_data",
+                "status_label": "Нет данных",
+                "days_since_last_workout": None,
+                "last_workout_date": None,
+            }
+
+            return jsonify({
+                "user_id": user_id,
+                "selected_date": selected_date,
+                "analysis_mode": "temporal_day",
+                "load_status": temporal_status["status_label"],
+                "recommendation": generate_temporal_recommendation(
+                    status=temporal_status["status"],
+                    last_load_class=None,
+                    days_since_last_workout=None,
+                ),
+                "temporal_status": temporal_status,
+                "features": {
+                    "training_frequency_7d": 0,
+                },
+                "prediction": None,
+                "display_metrics": build_display_metrics(
+                    temporal_status=temporal_status,
+                    features=None,
+                    last_workout_date=None,
+                ),
+            })
+
+        filtered_history = {
+            "user_id": user_id,
+            "workouts": workouts_until_selected_date,
+        }
+
+        features_df = build_features_from_history(filtered_history)
 
         if features_df.empty:
             return jsonify({"error": "Недостаточно данных для расчета признаков"}), 422
 
         latest_features = features_df.sort_values("date").tail(1)
         result = build_prediction_result(latest_features)
+
+        temporal_status = build_temporal_state(
+            load_class=result["load_class"],
+            workout_date=result["date"],
+            selected_date=selected_date,
+        )
+
+        temporal_training_frequency_7d = calculate_temporal_training_frequency_7d(
+            workouts=workout_history["workouts"],
+            selected_date=selected_date,
+        )
+
+        result["selected_date"] = selected_date
+        result["temporal_status"] = temporal_status
+
+        result["analysis_mode"] = (
+            "workout_analysis"
+            if temporal_status["status"] == "training_day"
+            else "temporal_day"
+        )
+
+        result["features"]["training_frequency_7d"] = temporal_training_frequency_7d
+        result["features"]["predicted_next_volume"] = result["prediction"]["predicted_next_volume"]
+
+        result["display_metrics"] = build_display_metrics(
+            temporal_status=temporal_status,
+            features=result["features"],
+            last_workout_date=result["date"],
+        )
+
+        if temporal_status["status"] != "training_day":
+            result["recommendation"] = generate_temporal_recommendation(
+                status=temporal_status["status"],
+                last_load_class=result["load_class"],
+                days_since_last_workout=temporal_status["days_since_last_workout"],
+            )
+            result["load_status"] = temporal_status["status_label"]
 
         return jsonify(result)
 

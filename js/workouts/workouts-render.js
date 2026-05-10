@@ -142,6 +142,7 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
+
 function addDays(date, days) {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
@@ -154,6 +155,7 @@ function formatDateKey(date) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
 function renderMlRecommendationLoading(container) {
   if (!container) return;
 
@@ -208,11 +210,10 @@ function renderMlRecommendationError(container, message) {
 function renderMlRecommendation(container, data) {
   if (!container || !data) return;
 
-  const statusClass = getMlStatusClass(data.load_class);
+  const statusClass = getMlStatusClass(data.load_class, data.temporal_status?.status);
   const confidenceLabel = data.confidence?.label || 'Уверенность не определена';
   const confidenceText = data.confidence?.text || '';
-  const predictedVolume = data.prediction?.predicted_next_volume ?? 0;
-  const features = data.features || {};
+  const displayMetrics = data.display_metrics || [];
 
   container.innerHTML = `
     <article class="ml-card ml-card--${statusClass}">
@@ -237,42 +238,24 @@ function renderMlRecommendation(container, data) {
         </div>
 
         <div class="ml-card__metrics">
-          <div class="ml-card__metric">
-            <span class="ml-card__metric-label">Прогноз объема</span>
-            <span class="ml-card__metric-value">${formatMlNumber(predictedVolume)} кг</span>
-          </div>
-
-          <div class="ml-card__metric">
-            <span class="ml-card__metric-label">Текущий объем</span>
-            <span class="ml-card__metric-value">${formatMlNumber(features.total_volume)} кг</span>
-          </div>
-
-          <div class="ml-card__metric">
-            <span class="ml-card__metric-label">Упражнения</span>
-            <span class="ml-card__metric-value">${escapeHtml(features.exercise_count ?? 0)}</span>
-          </div>
-
-          <div class="ml-card__metric">
-            <span class="ml-card__metric-label">Подходы</span>
-            <span class="ml-card__metric-value">${escapeHtml(features.sets_count ?? 0)}</span>
-          </div>
-
-          <div class="ml-card__metric">
-            <span class="ml-card__metric-label">Частота за 7 дней</span>
-            <span class="ml-card__metric-value">${escapeHtml(features.training_frequency_7d ?? 0)}</span>
-          </div>
-
-          <div class="ml-card__metric">
-            <span class="ml-card__metric-label">Средний 1RM</span>
-            <span class="ml-card__metric-value">${formatMlNumber(features.avg_1rm)} кг</span>
-          </div>
+          ${displayMetrics.map((metric) => `
+            <div class="ml-card__metric">
+              <span class="ml-card__metric-label">${escapeHtml(metric.label)}</span>
+              <span class="ml-card__metric-value">${escapeHtml(metric.value)}</span>
+            </div>
+          `).join('')}
         </div>
       </div>
     </article>
   `;
 }
 
-function getMlStatusClass(loadClass) {
+function getMlStatusClass(loadClass, temporalStatus) {
+  if (temporalStatus === 'recovery') return 'risk';
+  if (temporalStatus === 'ready') return 'optimal';
+  if (temporalStatus === 'underload') return 'low';
+  if (temporalStatus === 'no_data') return 'low';
+
   if (Number(loadClass) === 1) return 'optimal';
   if (Number(loadClass) === 2) return 'risk';
   return 'low';

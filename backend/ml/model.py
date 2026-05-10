@@ -320,3 +320,42 @@ def predict_next_volume(model, features_row: pd.DataFrame) -> float:
     prediction = model.predict(features_row[feature_columns])
 
     return float(prediction[0])
+def postprocess_next_volume_prediction(
+    raw_predicted_volume: float,
+    current_volume: float,
+    max_change_ratio: float = 0.35,
+) -> dict:
+    """
+    Ограничивает прогноз следующего тренировочного объема
+    безопасным диапазоном относительно текущего объема.
+
+    Модель сохраняется как источник прогноза, но итоговое значение
+    проходит постобработку для повышения интерпретируемости.
+    """
+
+    raw_value = float(raw_predicted_volume)
+
+    if current_volume <= 0:
+        safe_value = max(0.0, raw_value)
+
+        return {
+            "raw_predicted_next_volume": round(raw_value, 2),
+            "predicted_next_volume": round(safe_value, 2),
+            "prediction_was_clipped": raw_value != safe_value,
+            "min_allowed_volume": 0.0,
+            "max_allowed_volume": None,
+        }
+
+    min_allowed = current_volume * (1 - max_change_ratio)
+    max_allowed = current_volume * (1 + max_change_ratio)
+
+    clipped_value = min(max(raw_value, min_allowed), max_allowed)
+    clipped_value = max(0.0, clipped_value)
+
+    return {
+        "raw_predicted_next_volume": round(raw_value, 2),
+        "predicted_next_volume": round(clipped_value, 2),
+        "prediction_was_clipped": raw_value != clipped_value,
+        "min_allowed_volume": round(min_allowed, 2),
+        "max_allowed_volume": round(max_allowed, 2),
+    }

@@ -99,8 +99,16 @@ async function getWorkoutDetails(workoutId) {
 
   return data;
 }
-async function getMlRecommendation(userId) {
-  const response = await fetch(`${API_URL}/ml/recommendation?user_id=${encodeURIComponent(userId)}`);
+async function getMlRecommendation(userId, date = null) {
+  const params = new URLSearchParams({
+    user_id: String(userId),
+  });
+
+  if (date) {
+    params.append('date', date);
+  }
+
+  const response = await fetch(`${API_URL}/ml/recommendation?${params.toString()}`);
   const data = await response.json();
 
   if (!response.ok) {

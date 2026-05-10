@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setSelectedDate(parseDateKey(dateKey));
     setActiveDay(daysContainer, dateKey);
     renderWorkoutsForSelectedDate();
+    loadMlRecommendation();
   });
 
   if (prevBtn) {
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setCurrentStartDate(addDays(getCurrentStartDate(), -7));
       renderWeek(daysContainer, getCurrentStartDate(), getSelectedDate());
       renderWorkoutsForSelectedDate();
+      loadMlRecommendation();
     });
   }
 
@@ -57,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setCurrentStartDate(addDays(getCurrentStartDate(), 7));
       renderWeek(daysContainer, getCurrentStartDate(), getSelectedDate());
       renderWorkoutsForSelectedDate();
+      loadMlRecommendation();
     });
   }
 
@@ -135,7 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       renderMlRecommendationLoading(mlRecommendationContainer);
 
-      const recommendation = await getMlRecommendation(userId);
+      const selectedDateKey = formatDateKey(getSelectedDate());
+      const recommendation = await getMlRecommendation(userId, selectedDateKey);
+
       renderMlRecommendation(mlRecommendationContainer, recommendation);
     } catch (error) {
       if (error.status === 404) {
