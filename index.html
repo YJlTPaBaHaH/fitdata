@@ -22,16 +22,16 @@
 </head>
 <body>
   <div class="page home-page">
-<header class="header">
-  <a href="index.html" class="header__logo" aria-label="FITDATA">
-    <img src="assets/logo/logo.png" alt="FITDATA" class="header__logo-image">
-  </a>
+    <header class="header">
+      <a href="index.html" class="header__logo" aria-label="FITDATA">
+        <img src="assets/logo/logo.png" alt="FITDATA" class="header__logo-image">
+      </a>
 
-  <nav class="header__nav" aria-label="Основная навигация">
-    <a href="index.html" class="header__link header__link--active">Главная</a>
-    <a href="login.html" class="header__link">Вход / Регистрация</a>
-  </nav>
-</header>
+      <nav class="header__nav" aria-label="Основная навигация">
+        <a href="index.html" class="header__link header__link--active">Главная</a>
+        <a href="login.html" class="header__link">Вход / Регистрация</a>
+      </nav>
+    </header>
 
     <main class="page__content">
       <section class="hero-home">
@@ -50,7 +50,7 @@
           </a>
         </div>
 
-        <div class="hero-home__mockup"></div>
+        <div class="hero-home__mockup" id="homeInsightCard"></div>
       </section>
 
       <section class="home-result">
@@ -68,7 +68,9 @@
       </section>
     </main>
   </div>
-  <script src="js/utils/auth-header.js"></script> 
+
+  <script src="js/utils/auth-header.js"></script>
+  <script src="js/api/workouts-api.js"></script>
   <script src="js/pages/home.js"></script>
 </body>
 </html>

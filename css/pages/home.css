@@ -1,7 +1,6 @@
 /* ====================================
    HOME PAGE
    Project: FITDATA
-   Figma-like desktop composition
    ==================================== */
 
 .home-page {
@@ -9,7 +8,6 @@
   background: #ffffff;
 }
 
-/* Чтобы первый экран собирался как единая композиция */
 .home-page .page__content {
   min-height: calc(100vh - 81px);
   display: flex;
@@ -87,11 +85,185 @@
   width: 710px;
   min-width: 710px;
   height: 820px;
+  padding: 32px;
   background: #ffffff;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   border-radius: 15px;
   transform: translateY(11px);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* =========================
+   HOME INSIGHT CARD
+   ========================= */
+
+.home-insight {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(229, 57, 53, 0.08), rgba(255, 255, 255, 0.96) 45%),
+    #ffffff;
+  border: 1px solid #dedede;
+}
+
+.home-insight--risk {
+  border-left: 8px solid #e53935;
+}
+
+.home-insight--optimal {
+  border-left: 8px solid #2e7d32;
+}
+
+.home-insight--low {
+  border-left: 8px solid #f9a825;
+}
+
+.home-insight--neutral,
+.home-insight--demo {
+  border-left: 8px solid #424242;
+}
+
+.home-insight__eyebrow {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e53935;
+}
+
+.home-insight__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.home-insight__title {
+  margin: 0;
+  max-width: 420px;
+  font-family: var(--font-heading);
+  font-size: 34px;
+  line-height: 42px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.home-insight__badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #424242;
+}
+
+.home-insight__badge--optimal {
+  background: #2e7d32;
+}
+
+.home-insight__badge--risk {
+  background: #e53935;
+}
+
+.home-insight__badge--low {
+  background: #f9a825;
+  color: #111111;
+}
+
+.home-insight__badge--neutral {
+  background: #424242;
+}
+
+.home-insight__text {
+  margin: 24px 0 0;
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 31px;
+  font-weight: 400;
+  color: #222222;
+}
+
+.home-insight__metrics {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.home-insight__metric {
+  min-height: 104px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid #d9d9df;
+}
+
+.home-insight__metric--wide {
+  grid-column: 1 / -1;
+}
+
+.home-insight__metric-label {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 19px;
+  color: #333333;
+}
+
+.home-insight__metric-value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.home-insight__note {
+  margin: 24px 0 0;
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 27px;
+  color: #333333;
+}
+
+.home-insight__button {
+  width: 100%;
+  min-height: 58px;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #424242;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  line-height: 25px;
+  font-weight: 700;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.home-insight__button:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
 }
 
 /* =========================
@@ -146,6 +318,16 @@
     min-width: 650px;
     height: 760px;
   }
+
+  .home-insight__title {
+    font-size: 31px;
+    line-height: 38px;
+  }
+
+  .home-insight__text {
+    font-size: 20px;
+    line-height: 29px;
+  }
 }
 
 @media (max-width: 1600px) {
@@ -186,7 +368,55 @@
     width: 560px;
     min-width: 560px;
     height: 680px;
+    padding: 24px;
     transform: translateY(18px);
+  }
+
+  .home-insight {
+    padding: 22px;
+  }
+
+  .home-insight__title {
+    font-size: 26px;
+    line-height: 33px;
+  }
+
+  .home-insight__text {
+    margin-top: 18px;
+    font-size: 17px;
+    line-height: 25px;
+  }
+
+  .home-insight__metrics {
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .home-insight__metric {
+    min-height: 86px;
+    padding: 14px;
+  }
+
+  .home-insight__metric-label {
+    font-size: 13px;
+    line-height: 17px;
+  }
+
+  .home-insight__metric-value {
+    font-size: 20px;
+    line-height: 25px;
+  }
+
+  .home-insight__note {
+    margin-top: 18px;
+    font-size: 16px;
+    line-height: 23px;
+  }
+
+  .home-insight__button {
+    min-height: 52px;
+    font-size: 18px;
+    line-height: 23px;
   }
 
   .home-result {
@@ -252,7 +482,9 @@
     width: 100%;
     min-width: 0;
     max-width: 710px;
-    height: 460px;
+    height: auto;
+    min-height: 520px;
+    padding: 24px;
     transform: none;
   }
 
@@ -304,8 +536,37 @@
   }
 
   .hero-home__mockup {
-    height: 300px;
+    height: auto;
+    min-height: 460px;
+    padding: 16px;
     border-radius: 12px;
+  }
+
+  .home-insight {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .home-insight__header {
+    flex-direction: column;
+  }
+
+  .home-insight__title {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .home-insight__text {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .home-insight__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .home-insight__metric {
+    min-height: auto;
   }
 
   .home-result {
