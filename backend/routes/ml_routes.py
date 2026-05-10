@@ -96,6 +96,36 @@ def interpret_model_confidence(load_probabilities: dict) -> dict:
     }
 
 
+def apply_cold_start_confidence(
+    confidence: dict,
+    workouts_count: int,
+    minimum_workouts: int = 5,
+) -> dict:
+    """
+    Смягчает интерпретацию ML-результата при недостаточной истории тренировок.
+
+    Модель продолжает выполнять классификацию, но пользователь видит,
+    что анализ является предварительным до накопления достаточного объема данных.
+    """
+
+    if workouts_count >= minimum_workouts:
+        return confidence
+
+    updated_confidence = confidence.copy()
+    updated_confidence["level"] = "low"
+    updated_confidence["label"] = "Предварительный анализ"
+    updated_confidence["text"] = (
+        "История тренировок пользователя пока ограничена. "
+        "Результаты ML-анализа являются предварительными и будут становиться "
+        "точнее по мере накопления данных."
+    )
+    updated_confidence["is_cold_start"] = True
+    updated_confidence["workouts_count"] = workouts_count
+    updated_confidence["minimum_workouts"] = minimum_workouts
+
+    return updated_confidence
+
+
 def build_user_workout_history(user_id: int) -> dict:
     with get_connection() as connection:
         user = connection.execute(
@@ -183,7 +213,10 @@ def build_user_workout_history(user_id: int) -> dict:
     }
 
 
-def build_prediction_result(features_row: pd.DataFrame) -> dict:
+def build_prediction_result(
+    features_row: pd.DataFrame,
+    workouts_count: int,
+) -> dict:
     load_classifier, volume_regressor = get_models()
 
     latest_row = features_row.iloc[0]
@@ -193,6 +226,10 @@ def build_prediction_result(features_row: pd.DataFrame) -> dict:
 
     load_probabilities = predict_load_probabilities(load_classifier, features_row)
     confidence = interpret_model_confidence(load_probabilities)
+    confidence = apply_cold_start_confidence(
+        confidence=confidence,
+        workouts_count=workouts_count,
+    )
 
     raw_predicted_next_volume = predict_next_volume(volume_regressor, features_row)
 
@@ -304,7 +341,11 @@ def get_ml_recommendation():
             return jsonify({"error": "Недостаточно данных для расчета признаков"}), 422
 
         latest_features = features_df.sort_values("date").tail(1)
-        result = build_prediction_result(latest_features)
+
+        result = build_prediction_result(
+            features_row=latest_features,
+            workouts_count=len(workout_history["workouts"]),
+        )
 
         temporal_status = build_temporal_state(
             load_class=result["load_class"],

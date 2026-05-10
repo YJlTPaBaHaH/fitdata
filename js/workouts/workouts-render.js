@@ -210,8 +210,15 @@ function renderMlRecommendationError(container, message) {
 function renderMlRecommendation(container, data) {
   if (!container || !data) return;
 
-  const statusClass = getMlStatusClass(data.load_class, data.temporal_status?.status);
-  const confidenceLabel = data.confidence?.label || 'Уверенность не определена';
+  const temporalStatus = data.temporal_status?.status;
+  const isTrainingDay = temporalStatus === 'training_day';
+
+  const statusClass = getMlStatusClass(data.load_class, temporalStatus);
+
+  const confidenceLabel = isTrainingDay
+    ? (data.confidence?.label || 'Уверенность не определена')
+    : 'Уверенность анализа последней тренировки';
+
   const confidenceText = data.confidence?.text || '';
   const displayMetrics = data.display_metrics || [];
 
