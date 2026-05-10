@@ -99,3 +99,15 @@ async function getWorkoutDetails(workoutId) {
 
   return data;
 }
+async function getMlRecommendation(userId) {
+  const response = await fetch(`${API_URL}/ml/recommendation?user_id=${encodeURIComponent(userId)}`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(data.error || 'Ошибка загрузки ML-рекомендации');
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+}

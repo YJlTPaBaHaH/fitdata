@@ -154,3 +154,138 @@ function formatDateKey(date) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+function renderMlRecommendationLoading(container) {
+  if (!container) return;
+
+  container.innerHTML = `
+    <article class="ml-card ml-card--loading">
+      <div class="ml-card__header">
+        <div>
+          <p class="ml-card__eyebrow">FITDATA ML</p>
+          <h2 class="ml-card__title">Интеллектуальный анализ</h2>
+        </div>
+      </div>
+
+      <p class="ml-card__text">Загрузка рекомендации...</p>
+    </article>
+  `;
+}
+
+function renderMlRecommendationEmpty(container, message) {
+  if (!container) return;
+
+  container.innerHTML = `
+    <article class="ml-card">
+      <div class="ml-card__header">
+        <div>
+          <p class="ml-card__eyebrow">FITDATA ML</p>
+          <h2 class="ml-card__title">Интеллектуальный анализ</h2>
+        </div>
+      </div>
+
+      <p class="ml-card__text">${escapeHtml(message)}</p>
+    </article>
+  `;
+}
+
+function renderMlRecommendationError(container, message) {
+  if (!container) return;
+
+  container.innerHTML = `
+    <article class="ml-card ml-card--error">
+      <div class="ml-card__header">
+        <div>
+          <p class="ml-card__eyebrow">FITDATA ML</p>
+          <h2 class="ml-card__title">Интеллектуальный анализ временно недоступен</h2>
+        </div>
+      </div>
+
+      <p class="ml-card__text">${escapeHtml(message)}</p>
+    </article>
+  `;
+}
+
+function renderMlRecommendation(container, data) {
+  if (!container || !data) return;
+
+  const statusClass = getMlStatusClass(data.load_class);
+  const confidenceLabel = data.confidence?.label || 'Уверенность не определена';
+  const confidenceText = data.confidence?.text || '';
+  const predictedVolume = data.prediction?.predicted_next_volume ?? 0;
+  const features = data.features || {};
+
+  container.innerHTML = `
+    <article class="ml-card ml-card--${statusClass}">
+      <div class="ml-card__header">
+        <div>
+          <p class="ml-card__eyebrow">FITDATA ML</p>
+          <h2 class="ml-card__title">Интеллектуальный анализ тренировочного режима</h2>
+        </div>
+
+        <span class="ml-card__badge">${escapeHtml(data.load_status)}</span>
+      </div>
+
+      <div class="ml-card__content">
+        <div class="ml-card__main">
+          <p class="ml-card__label">Рекомендация</p>
+          <p class="ml-card__recommendation">${escapeHtml(data.recommendation)}</p>
+
+          <div class="ml-card__confidence">
+            <span class="ml-card__confidence-title">${escapeHtml(confidenceLabel)}</span>
+            <span class="ml-card__confidence-text">${escapeHtml(confidenceText)}</span>
+          </div>
+        </div>
+
+        <div class="ml-card__metrics">
+          <div class="ml-card__metric">
+            <span class="ml-card__metric-label">Прогноз объема</span>
+            <span class="ml-card__metric-value">${formatMlNumber(predictedVolume)} кг</span>
+          </div>
+
+          <div class="ml-card__metric">
+            <span class="ml-card__metric-label">Текущий объем</span>
+            <span class="ml-card__metric-value">${formatMlNumber(features.total_volume)} кг</span>
+          </div>
+
+          <div class="ml-card__metric">
+            <span class="ml-card__metric-label">Упражнения</span>
+            <span class="ml-card__metric-value">${escapeHtml(features.exercise_count ?? 0)}</span>
+          </div>
+
+          <div class="ml-card__metric">
+            <span class="ml-card__metric-label">Подходы</span>
+            <span class="ml-card__metric-value">${escapeHtml(features.sets_count ?? 0)}</span>
+          </div>
+
+          <div class="ml-card__metric">
+            <span class="ml-card__metric-label">Частота за 7 дней</span>
+            <span class="ml-card__metric-value">${escapeHtml(features.training_frequency_7d ?? 0)}</span>
+          </div>
+
+          <div class="ml-card__metric">
+            <span class="ml-card__metric-label">Средний 1RM</span>
+            <span class="ml-card__metric-value">${formatMlNumber(features.avg_1rm)} кг</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function getMlStatusClass(loadClass) {
+  if (Number(loadClass) === 1) return 'optimal';
+  if (Number(loadClass) === 2) return 'risk';
+  return 'low';
+}
+
+function formatMlNumber(value) {
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return '0';
+  }
+
+  return number.toLocaleString('ru-RU', {
+    maximumFractionDigits: 1,
+  });
+}

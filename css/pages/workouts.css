@@ -136,6 +136,190 @@
 }
 
 /* =========================
+   ML RECOMMENDATION
+   ========================= */
+
+.ml-recommendation {
+  margin: -22px 0 46px;
+}
+
+.ml-card {
+  width: 100%;
+  padding: 30px 34px 32px;
+  border: 1px solid rgba(66, 66, 66, 0.18);
+  border-radius: 15px;
+  background:
+    linear-gradient(135deg, rgba(229, 57, 53, 0.08), rgba(255, 255, 255, 0) 42%),
+    #ffffff;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+}
+
+.ml-card--low {
+  border-left: 8px solid #f9a825;
+}
+
+.ml-card--optimal {
+  border-left: 8px solid #2e7d32;
+}
+
+.ml-card--risk,
+.ml-card--error {
+  border-left: 8px solid #e53935;
+}
+
+.ml-card--loading {
+  border-left: 8px solid #424242;
+}
+
+.ml-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.ml-card__eyebrow {
+  margin: 0 0 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e53935;
+}
+
+.ml-card__title {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 39px;
+  color: #000000;
+}
+
+.ml-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #424242;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 20px;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.ml-card--low .ml-card__badge {
+  background: #f9a825;
+  color: #000000;
+}
+
+.ml-card--optimal .ml-card__badge {
+  background: #2e7d32;
+}
+
+.ml-card--risk .ml-card__badge,
+.ml-card--error .ml-card__badge {
+  background: #e53935;
+}
+
+.ml-card__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.ml-card__main {
+  min-width: 0;
+}
+
+.ml-card__label {
+  margin: 0 0 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
+  color: #424242;
+}
+
+.ml-card__recommendation,
+.ml-card__text {
+  margin: 0;
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 32px;
+  color: #424242;
+}
+
+.ml-card__confidence {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: #f5f4f7;
+  border: 1px solid rgba(66, 66, 66, 0.12);
+}
+
+.ml-card__confidence-title {
+  display: block;
+  margin-bottom: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
+  color: #000000;
+}
+
+.ml-card__confidence-text {
+  display: block;
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 26px;
+  color: #424242;
+}
+
+.ml-card__metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ml-card__metric {
+  min-height: 98px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f5f4f7;
+  border: 1px solid rgba(66, 66, 66, 0.12);
+}
+
+.ml-card__metric-label {
+  display: block;
+  margin-bottom: 10px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  color: #424242;
+}
+
+.ml-card__metric-value {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 30px;
+  color: #000000;
+}
+
+/* =========================
    GRID
    ========================= */
 
@@ -355,6 +539,10 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .ml-card__content {
+    grid-template-columns: 1fr;
+  }
+
   .workouts-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -404,6 +592,38 @@
     min-height: 60px;
     font-size: 22px;
     line-height: 28px;
+  }
+
+  .ml-recommendation {
+    margin: -10px 0 28px;
+  }
+
+  .ml-card {
+    padding: 22px 20px 24px;
+  }
+
+  .ml-card__header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ml-card__title {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .ml-card__badge {
+    white-space: normal;
+  }
+
+  .ml-card__recommendation,
+  .ml-card__text {
+    font-size: 18px;
+    line-height: 27px;
+  }
+
+  .ml-card__metrics {
+    grid-template-columns: 1fr;
   }
 
   .workouts-grid {

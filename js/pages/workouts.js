@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const prevBtn = document.querySelectorAll('.workouts-calendar__arrow')[0];
   const nextBtn = document.querySelectorAll('.workouts-calendar__arrow')[1];
   const workoutsGrid = document.getElementById('workoutsGrid');
+  const mlRecommendationContainer = document.getElementById('mlRecommendation');
 
   const modal = document.getElementById('workoutModal');
   const openModalBtn = document.getElementById('openWorkoutModal');
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderWeek(daysContainer, getCurrentStartDate(), getSelectedDate());
   loadExercises();
   renderWorkoutsForSelectedDate();
+  loadMlRecommendation();
 
   daysContainer.addEventListener('click', (event) => {
     const dayButton = event.target.closest('.workouts-calendar__day');
@@ -118,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       await addSet(workoutExercise.workout_exercise_id, weight, reps);
       await renderWorkoutsForSelectedDate();
+      await loadMlRecommendation();
 
       closeWorkoutModal(modal, workoutForm);
     } catch (error) {
@@ -125,6 +128,32 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error(error);
     }
   });
+
+  async function loadMlRecommendation() {
+    if (!mlRecommendationContainer) return;
+
+    try {
+      renderMlRecommendationLoading(mlRecommendationContainer);
+
+      const recommendation = await getMlRecommendation(userId);
+      renderMlRecommendation(mlRecommendationContainer, recommendation);
+    } catch (error) {
+      if (error.status === 404) {
+        renderMlRecommendationEmpty(
+          mlRecommendationContainer,
+          'Добавьте несколько тренировок, чтобы FITDATA смог сформировать интеллектуальную рекомендацию.'
+        );
+        return;
+      }
+
+      renderMlRecommendationError(
+        mlRecommendationContainer,
+        'Не удалось загрузить ML-рекомендацию. Сохранение тренировок при этом продолжает работать.'
+      );
+
+      console.error(error);
+    }
+  }
 
   async function loadExercises() {
     try {
