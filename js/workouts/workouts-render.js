@@ -222,6 +222,20 @@ function renderMlRecommendation(container, data) {
   const confidenceText = data.confidence?.text || '';
   const displayMetrics = data.display_metrics || [];
 
+  const suggestedVolume = data.suggested_next_volume;
+  const predictedVolume = data.prediction?.predicted_next_volume;
+
+  const suggestedVolumeHtml = renderSuggestedVolume(
+    suggestedVolume,
+    predictedVolume
+  );
+
+  const profileWarningsHtml = renderProfileWarnings(
+    data.profile_warnings || []
+  );
+
+  const profileSafetyHtml = renderProfileSafety(data.profile_safety);
+
   container.innerHTML = `
     <article class="ml-card ml-card--${statusClass}">
       <div class="ml-card__header">
@@ -238,10 +252,16 @@ function renderMlRecommendation(container, data) {
           <p class="ml-card__label">Рекомендация</p>
           <p class="ml-card__recommendation">${escapeHtml(data.recommendation)}</p>
 
+          ${suggestedVolumeHtml}
+
+          ${profileWarningsHtml}
+
           <div class="ml-card__confidence">
             <span class="ml-card__confidence-title">${escapeHtml(confidenceLabel)}</span>
             <span class="ml-card__confidence-text">${escapeHtml(confidenceText)}</span>
           </div>
+
+          ${profileSafetyHtml}
         </div>
 
         <div class="ml-card__metrics">
@@ -255,6 +275,75 @@ function renderMlRecommendation(container, data) {
       </div>
     </article>
   `;
+}
+
+function renderSuggestedVolume(suggestedVolume, predictedVolume) {
+  if (suggestedVolume === null || suggestedVolume === undefined) {
+    return '';
+  }
+
+  const predictedText = predictedVolume !== null && predictedVolume !== undefined
+    ? `
+      <span class="ml-card__suggested-note">
+        Прогноз модели: ${formatMlNumber(predictedVolume)} кг
+      </span>
+    `
+    : '';
+
+  return `
+    <div class="ml-card__suggested">
+      <span class="ml-card__suggested-label">Рекомендуемый ориентир следующей тренировки</span>
+      <strong class="ml-card__suggested-value">${formatMlNumber(suggestedVolume)} кг</strong>
+      ${predictedText}
+    </div>
+  `;
+}
+
+function renderProfileWarnings(warnings) {
+  if (!Array.isArray(warnings) || warnings.length === 0) {
+    return '';
+  }
+
+  return `
+    <div class="ml-card__warnings">
+      ${warnings.map((warning) => `
+        <div class="ml-card__warning ml-card__warning--${escapeHtml(warning.level || 'warning')}">
+          <strong class="ml-card__warning-title">${escapeHtml(warning.title || 'Предупреждение')}</strong>
+          <span class="ml-card__warning-text">${escapeHtml(warning.text || '')}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderProfileSafety(profileSafety) {
+  if (!profileSafety || !profileSafety.is_applied) {
+    return '';
+  }
+
+  const levelLabel = profileSafety.training_level_label || 'Не указан';
+  const goalLabel = profileSafety.training_goal_label || 'Не указана';
+  const riskLabel = getRiskLabel(profileSafety.risk_level);
+
+  return `
+    <div class="ml-card__profile">
+      <span class="ml-card__profile-title">Учтён профиль пользователя</span>
+      <span class="ml-card__profile-text">
+        Уровень: ${escapeHtml(levelLabel)} · Цель: ${escapeHtml(goalLabel)} · Режим осторожности: ${escapeHtml(riskLabel)}
+      </span>
+    </div>
+  `;
+}
+
+function getRiskLabel(riskLevel) {
+  const labels = {
+    none: 'не применён',
+    low: 'низкий',
+    medium: 'средний',
+    high: 'повышенный',
+  };
+
+  return labels[riskLevel] || 'средний';
 }
 
 function getMlStatusClass(loadClass, temporalStatus) {

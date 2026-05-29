@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from functools import lru_cache
 from datetime import date as current_date
@@ -15,6 +16,7 @@ from ml.model import (
     postprocess_next_volume_prediction,
 )
 from ml.recommender import (
+    apply_profile_safety_layer,
     generate_recommendation,
     generate_temporal_recommendation,
     get_load_status,
@@ -124,6 +126,91 @@ def apply_cold_start_confidence(
     updated_confidence["minimum_workouts"] = minimum_workouts
 
     return updated_confidence
+
+
+def parse_profile_limitations(value):
+    if value is None:
+        return []
+
+    if isinstance(value, list):
+        return value
+
+    if isinstance(value, str):
+        try:
+            parsed_value = json.loads(value)
+            return parsed_value if isinstance(parsed_value, list) else []
+        except json.JSONDecodeError:
+            return [
+                item.strip()
+                for item in value.split(",")
+                if item.strip()
+            ]
+
+    return []
+
+
+def build_empty_user_profile(user):
+    return {
+        "id": None,
+        "user_id": user["user_id"],
+        "full_name": "",
+        "email": user["email"],
+        "age": None,
+        "training_level": "",
+        "training_goal": "",
+        "health_limitations": [],
+        "disclaimer_accepted": False,
+        "created_at": None,
+        "updated_at": None,
+    }
+
+
+def get_user_profile(user_id: int) -> dict:
+    with get_connection() as connection:
+        user = connection.execute(
+            """
+            SELECT user_id, email
+            FROM users
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        if user is None:
+            raise ValueError("Пользователь не найден")
+
+        profile = connection.execute(
+            """
+            SELECT
+                id,
+                user_id,
+                full_name,
+                email,
+                age,
+                training_level,
+                training_goal,
+                health_limitations,
+                disclaimer_accepted,
+                created_at,
+                updated_at
+            FROM user_profiles
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+    if profile is None:
+        return build_empty_user_profile(user)
+
+    profile_dict = dict(profile)
+    profile_dict["health_limitations"] = parse_profile_limitations(
+        profile_dict.get("health_limitations")
+    )
+    profile_dict["disclaimer_accepted"] = bool(
+        profile_dict.get("disclaimer_accepted")
+    )
+
+    return profile_dict
 
 
 def build_user_workout_history(user_id: int) -> dict:
@@ -267,9 +354,14 @@ def build_prediction_result(
             "avg_1rm": round(float(latest_row["avg_1rm"]), 2),
             "max_1rm": round(float(latest_row["max_1rm"]), 2),
             "exercise_count": int(latest_row["exercise_count"]),
-            "days_since_previous_workout": int(latest_row["days_since_previous_workout"]),
+            "days_since_previous_workout": int(
+                latest_row["days_since_previous_workout"]
+            ),
             "volume_change": round(float(latest_row["volume_change"]), 4),
-            "rolling_volume_mean": round(float(latest_row["rolling_volume_mean"]), 2),
+            "rolling_volume_mean": round(
+                float(latest_row["rolling_volume_mean"]),
+                2,
+            ),
             "volume_trend": round(float(latest_row["volume_trend"]), 4),
             "training_frequency_7d": int(latest_row["training_frequency_7d"]),
         },
@@ -289,6 +381,7 @@ def get_ml_recommendation():
         selected_date = current_date.today().isoformat()
 
     try:
+        user_profile = get_user_profile(user_id)
         workout_history = build_user_workout_history(user_id)
 
         if not workout_history["workouts"]:
@@ -308,16 +401,28 @@ def get_ml_recommendation():
                 "last_workout_date": None,
             }
 
+            base_recommendation = generate_temporal_recommendation(
+                status=temporal_status["status"],
+                last_load_class=None,
+                days_since_last_workout=None,
+            )
+
+            profile_result = apply_profile_safety_layer(
+                recommendation=base_recommendation,
+                prediction_data=None,
+                user_profile=user_profile,
+            )
+
             return jsonify({
                 "user_id": user_id,
                 "selected_date": selected_date,
                 "analysis_mode": "temporal_day",
                 "load_status": temporal_status["status_label"],
-                "recommendation": generate_temporal_recommendation(
-                    status=temporal_status["status"],
-                    last_load_class=None,
-                    days_since_last_workout=None,
-                ),
+                "recommendation": profile_result["recommendation"],
+                "suggested_next_volume": profile_result["suggested_next_volume"],
+                "profile_warnings": profile_result["profile_warnings"],
+                "profile_safety": profile_result["profile_safety"],
+                "user_profile": user_profile,
                 "temporal_status": temporal_status,
                 "features": {
                     "training_frequency_7d": 0,
@@ -368,7 +473,9 @@ def get_ml_recommendation():
         )
 
         result["features"]["training_frequency_7d"] = temporal_training_frequency_7d
-        result["features"]["predicted_next_volume"] = result["prediction"]["predicted_next_volume"]
+        result["features"]["predicted_next_volume"] = result["prediction"][
+            "predicted_next_volume"
+        ]
 
         result["display_metrics"] = build_display_metrics(
             temporal_status=temporal_status,
@@ -383,6 +490,18 @@ def get_ml_recommendation():
                 days_since_last_workout=temporal_status["days_since_last_workout"],
             )
             result["load_status"] = temporal_status["status_label"]
+
+        profile_result = apply_profile_safety_layer(
+            recommendation=result["recommendation"],
+            prediction_data=result,
+            user_profile=user_profile,
+        )
+
+        result["recommendation"] = profile_result["recommendation"]
+        result["suggested_next_volume"] = profile_result["suggested_next_volume"]
+        result["profile_warnings"] = profile_result["profile_warnings"]
+        result["profile_safety"] = profile_result["profile_safety"]
+        result["user_profile"] = user_profile
 
         return jsonify(result)
 
