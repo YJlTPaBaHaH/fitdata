@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS sets;
 DROP TABLE IF EXISTS workout_exercises;
 DROP TABLE IF EXISTS workouts;
 DROP TABLE IF EXISTS exercises;
+DROP TABLE IF EXISTS user_profiles;
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
@@ -12,7 +13,23 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE user_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    full_name TEXT,
+    email TEXT,
+    age INTEGER,
+    training_level TEXT,
+    training_goal TEXT,
+    health_limitations TEXT NOT NULL DEFAULT '[]',
+    disclaimer_accepted INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+);
 CREATE TABLE workouts (
     workout_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -65,3 +82,4 @@ CREATE INDEX idx_workout_exercises_workout_id ON workout_exercises(workout_id);
 CREATE INDEX idx_workout_exercises_exercise_id ON workout_exercises(exercise_id);
 CREATE INDEX idx_sets_workout_exercise_id ON sets(workout_exercise_id);
 CREATE INDEX idx_sets_order ON sets(workout_exercise_id, set_number);
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);

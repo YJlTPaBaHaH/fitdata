@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FITDATA — Личный кабинет</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base/reset.css">
+  <link rel="stylesheet" href="css/base/variables.css">
+  <link rel="stylesheet" href="css/base/typography.css">
+  <link rel="stylesheet" href="css/base/global.css">
+
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/forms.css">
+  <link rel="stylesheet" href="css/layout/header.css">
+  <link rel="stylesheet" href="css/pages/profile.css">
+</head>
+
+<body>
+  <div class="page profile-page">
+    <header class="header">
+      <a href="index.html" class="header__logo" aria-label="FITDATA">
+        <img src="assets/logo/logo.png" alt="FITDATA" class="header__logo-image">
+      </a>
+
+      <nav class="header__nav" aria-label="Основная навигация"></nav>
+    </header>
+
+    <main class="profile">
+      <div class="profile__container">
+        <aside class="profile-summary" aria-label="Краткая информация о профиле">
+          <div class="profile-summary__user">
+            <div class="profile-summary__avatar" id="profileAvatar">FD</div>
+
+            <div>
+              <h1 class="profile-summary__name" id="summaryName">Пользователь FITDATA</h1>
+              <p class="profile-summary__email" id="summaryEmail">—</p>
+            </div>
+          </div>
+
+          <div class="profile-summary__divider"></div>
+
+          <div class="profile-summary__item">
+            <span class="profile-summary__icon">👤</span>
+            <div>
+              <span class="profile-summary__label">Уровень подготовки</span>
+              <strong class="profile-summary__value" id="summaryLevel">—</strong>
+            </div>
+          </div>
+
+          <div class="profile-summary__item">
+            <span class="profile-summary__icon">🎯</span>
+            <div>
+              <span class="profile-summary__label">Цель тренировок</span>
+              <strong class="profile-summary__value" id="summaryGoal">—</strong>
+            </div>
+          </div>
+
+          <div class="profile-summary__item">
+            <span class="profile-summary__icon">↗</span>
+            <div>
+              <span class="profile-summary__label">Возраст</span>
+              <strong class="profile-summary__value" id="summaryAge">—</strong>
+            </div>
+          </div>
+
+          <div class="profile-summary__divider"></div>
+
+          <div class="profile-summary__progress-head">
+            <span>Профиль заполнен на</span>
+            <strong id="profileProgressText">0%</strong>
+          </div>
+
+          <div class="profile-summary__progress">
+            <div class="profile-summary__progress-fill" id="profileProgressFill"></div>
+          </div>
+
+          <div class="profile-summary__hint">
+            Заполните профиль полностью, чтобы получать более точные персональные рекомендации.
+          </div>
+          <button class="profile-summary__logout" type="button" id="logoutButton">
+          Выйти из аккаунта
+          </button>
+        </aside>
+
+        <section class="profile-content">
+          <form class="profile-form" id="profileForm">
+            <section class="profile-card">
+              <div class="profile-card__header">
+                <span class="profile-card__icon">👤</span>
+                <h2 class="profile-card__title">Основные данные</h2>
+              </div>
+
+              <div class="profile-card__grid profile-card__grid--three">
+                <div class="profile-field">
+                  <label class="profile-field__label" for="fullName">Имя пользователя</label>
+                  <input
+                    class="profile-field__input"
+                    type="text"
+                    id="fullName"
+                    name="full_name"
+                    placeholder="Введите имя"
+                    autocomplete="name"
+                  >
+                </div>
+
+                <div class="profile-field">
+                  <label class="profile-field__label" for="email">Электронная почта</label>
+                  <input
+                    class="profile-field__input"
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="user@example.com"
+                    autocomplete="email"
+                  >
+                </div>
+
+                <div class="profile-field">
+                  <label class="profile-field__label" for="age">Возраст</label>
+                  <input
+                    class="profile-field__input"
+                    type="number"
+                    id="age"
+                    name="age"
+                    placeholder="18"
+                    min="14"
+                    max="100"
+                    step="1"
+                  >
+                </div>
+              </div>
+            </section>
+
+            <section class="profile-card">
+              <div class="profile-card__header">
+                <span class="profile-card__icon">🏋️</span>
+                <h2 class="profile-card__title">Тренировочный профиль</h2>
+              </div>
+
+              <div class="profile-group">
+                <span class="profile-group__label">Уровень подготовки</span>
+
+                <div class="profile-segment" role="group" aria-label="Уровень подготовки">
+                  <button class="profile-segment__button" type="button" data-level="beginner">
+                    Новичок
+                  </button>
+                  <button class="profile-segment__button" type="button" data-level="amateur">
+                    Любитель
+                  </button>
+                  <button class="profile-segment__button" type="button" data-level="advanced">
+                    Продвинутый
+                  </button>
+                </div>
+              </div>
+
+              <div class="profile-group">
+                <span class="profile-group__label">Цель тренировок</span>
+
+                <div class="profile-segment profile-segment--wide" role="group" aria-label="Цель тренировок">
+                  <button class="profile-segment__button" type="button" data-goal="muscle_gain">
+                    Набор мышечной массы
+                  </button>
+                  <button class="profile-segment__button" type="button" data-goal="strength">
+                    Развитие силы
+                  </button>
+                  <button class="profile-segment__button" type="button" data-goal="maintenance">
+                    Поддержание формы
+                  </button>
+                  <button class="profile-segment__button" type="button" data-goal="general_fitness">
+                    Общий фитнес
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="profile-card">
+              <div class="profile-card__header">
+                <span class="profile-card__icon">🛡</span>
+                <h2 class="profile-card__title">Ограничения тренировочной нагрузки</h2>
+              </div>
+
+              <div class="profile-limitations" aria-label="Ограничения тренировочной нагрузки">
+                <label class="profile-checkbox">
+                  <input type="checkbox" name="limitations" value="back">
+                  <span>Спина</span>
+                </label>
+
+                <label class="profile-checkbox">
+                  <input type="checkbox" name="limitations" value="knees">
+                  <span>Колени</span>
+                </label>
+
+                <label class="profile-checkbox profile-checkbox--wide">
+                  <input type="checkbox" name="limitations" value="cardio">
+                  <span>Сердечно-сосудистые ограничения</span>
+                </label>
+
+                <label class="profile-checkbox">
+                  <input type="checkbox" name="limitations" value="blood_pressure">
+                  <span>Давление</span>
+                </label>
+
+                <label class="profile-checkbox">
+                  <input type="checkbox" name="limitations" value="injuries">
+                  <span>Травмы</span>
+                </label>
+
+                <label class="profile-checkbox">
+                  <input type="checkbox" name="limitations" value="other">
+                  <span>Другое</span>
+                </label>
+              </div
+
+              <p class="profile-note">
+                Эти данные не являются медицинским диагнозом и используются только для более осторожной персонализации рекомендаций.
+              </p>
+            </section>
+
+            <section class="profile-card">
+              <div class="profile-card__header">
+                <span class="profile-card__icon profile-card__icon--warning">⚠</span>
+                <h2 class="profile-card__title">Ответственность и предупреждение</h2>
+              </div>
+
+              <label class="profile-disclaimer">
+                <input type="checkbox" id="disclaimerAccepted" name="disclaimer_accepted">
+                <span>
+                  Рекомендации FITDATA носят информационно-аналитический характер, не являются медицинским назначением
+                  и не заменяют консультацию специалиста. Пользователь самостоятельно принимает решение о применении
+                  рекомендаций в тренировочном процессе.
+                </span>
+              </label>
+
+              <div class="profile-warning">
+                Если предупреждение не принято, профиль всё равно можно сохранить, однако в ML-блоке будет отображаться дополнительное уведомление.
+              </div>
+            </section>
+
+            <div class="profile-actions">
+              <div class="profile-status" id="profileStatus" aria-live="polite"></div>
+              <div class="profile-actions__buttons">
+                <button class="profile-button profile-button--secondary" type="button" id="editProfileButton">
+                  Изменить
+                </button>
+                <button class="profile-button profile-button--secondary profile-button--hidden" type="button" id="resetProfileButton">
+                  Отменить
+                </button>
+                <button class="profile-button profile-button--primary profile-button--hidden" type="submit" id="saveProfileButton">
+                  Сохранить профиль
+                </button>
+              </div>
+
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/utils/auth-header.js"></script>
+  <script src="js/api/profile-api.js"></script>
+  <script src="js/pages/profile.js"></script>
+</body>
+</html>

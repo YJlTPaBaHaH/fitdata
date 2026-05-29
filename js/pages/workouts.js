@@ -1,3 +1,8 @@
+if (window.__FITDATA_WORKOUTS_INITIALIZED__) {
+  throw new Error('FITDATA already initialized');
+}
+
+window.__FITDATA_WORKOUTS_INITIALIZED__ = true;
 document.addEventListener('DOMContentLoaded', () => {
   const userId = localStorage.getItem('fitdata_user_id');
 

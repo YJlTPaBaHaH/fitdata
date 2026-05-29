@@ -5,6 +5,7 @@ from routes.ml_routes import ml_routes
 from routes.auth_routes import auth_routes
 from routes.workout_routes import workout_routes
 from routes.analytics_routes import analytics_routes
+from routes.profile_routes import profile_routes
 
 
 app = Flask(__name__)
@@ -20,7 +21,7 @@ def health():
 app.register_blueprint(auth_routes)
 app.register_blueprint(workout_routes)
 app.register_blueprint(analytics_routes)
-
+app.register_blueprint(profile_routes)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

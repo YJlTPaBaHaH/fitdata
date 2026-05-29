@@ -28,32 +28,22 @@ document.addEventListener('DOMContentLoaded', () => {
         class="header-user__dropdown"
         id="userMenuDropdown"
       >
-        <button
-          class="header-user__logout"
-          type="button"
-          id="logoutButton"
+        <a
+          class="header-user__profile-link"
+          href="profile.html"
         >
-          Выйти
-        </button>
+          Личный кабинет
+        </a>
       </div>
     </div>
   `;
 
   const userMenuButton = document.getElementById('userMenuButton');
   const userMenuDropdown = document.getElementById('userMenuDropdown');
-  const logoutButton = document.getElementById('logoutButton');
 
   if (userMenuButton && userMenuDropdown) {
     userMenuButton.addEventListener('click', () => {
       userMenuDropdown.classList.toggle('header-user__dropdown--open');
-    });
-  }
-
-  if (logoutButton) {
-    logoutButton.addEventListener('click', () => {
-      localStorage.removeItem('fitdata_user_id');
-      localStorage.removeItem('fitdata_email');
-      window.location.href = 'login.html';
     });
   }
 
